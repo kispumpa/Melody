@@ -1,22 +1,23 @@
 ﻿namespace Melody.UI
 {
-    using System.Text;
+    using CommunityToolkit.Mvvm.Messaging;
 
     internal class ToggleViewLogic : IToggleViewLogic
     {
-        public ToggleViewLogic()
+        private IMessenger messenger;
+
+        public ToggleViewLogic(IMessenger messenger)
         {
             this.IsPianoRollView = true;
+            this.messenger = messenger;
         }
 
-        public event EventHandler ViewChanged;
-
-        public bool IsPianoRollView { get; private set; }
+        public bool IsPianoRollView { get; set; }
 
         public void ToggleView()
         {
             this.IsPianoRollView = !this.IsPianoRollView;
-            this.ViewChanged?.Invoke(this, null);
+            this.messenger.Send("View changed", "ViewResult");
         }
     }
 }

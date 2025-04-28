@@ -1,25 +1,42 @@
 ﻿namespace Melody.UI
 {
     using System.ComponentModel;
-    using System.Runtime.CompilerServices;
+    using System.Windows;
     using System.Windows.Input;
+    using CommunityToolkit.Mvvm.ComponentModel;
+    using CommunityToolkit.Mvvm.DependencyInjection;
     using CommunityToolkit.Mvvm.Input;
 
-    public class MainWindowViewModel : INotifyPropertyChanged
+    public class MainWindowViewModel : ObservableRecipient
     {
         private IToggleViewLogic toggleLogic;
 
         public MainWindowViewModel()
+            : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>())
         {
-            this.toggleLogic = new ToggleViewLogic(); // nem jo
-            this.toggleLogic.ViewChanged += this.ToggleLogic_ViewChanged;
+        }
+
+        public MainWindowViewModel(IToggleViewLogic toggleLogic)
+        {
+            this.toggleLogic = toggleLogic;
+            this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
+            {
+                this.OnPropertyChanged(nameof(this.IsPianoRollView));
+                this.OnPropertyChanged(nameof(this.IsSheetMusicView));
+            });
+
             this.ToggleViewCommand = new RelayCommand(
                 () => this.toggleLogic.ToggleView());
         }
 
-        public event EventHandler ViewChanged;
-
-        public event PropertyChangedEventHandler? PropertyChanged;
+        public static bool IsInDesignMode
+        {
+            get
+            {
+                var prop = DesignerProperties.IsInDesignModeProperty;
+                return (bool)DependencyPropertyDescriptor.FromProperty(prop, typeof(FrameworkElement)).Metadata.DefaultValue;
+            }
+        }
 
         public ICommand ToggleViewCommand { get; set; }
 
@@ -31,18 +48,6 @@
         public bool IsSheetMusicView
         {
             get => !this.toggleLogic.IsPianoRollView;
-        }
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-        }
-
-        private void ToggleLogic_ViewChanged(object? sender, EventArgs e)
-        {
-            this.OnPropertyChanged(nameof(this.IsPianoRollView));
-            this.OnPropertyChanged(nameof(this.IsSheetMusicView));
-            this.ViewChanged?.Invoke(this, null);
         }
     }
 }

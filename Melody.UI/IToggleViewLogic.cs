@@ -1,10 +1,8 @@
 ﻿namespace Melody.UI
 {
-    internal interface IToggleViewLogic
+    public interface IToggleViewLogic
     {
-        event EventHandler ViewChanged;
-
-        bool IsPianoRollView { get; }
+        bool IsPianoRollView { get; set; }
 
         void ToggleView();
     }
