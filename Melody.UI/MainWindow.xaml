@@ -13,7 +13,7 @@
     </Window.Resources>
     <Grid>
         <Grid.DataContext>
-            <local:MainWindowViewModel />
+            <local:MainWindowViewModel/>
         </Grid.DataContext>
         
         <Grid.RowDefinitions>

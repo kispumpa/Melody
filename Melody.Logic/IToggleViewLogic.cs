@@ -1,4 +1,4 @@
-﻿namespace Melody.UI
+﻿namespace Melody.Logic
 {
     public interface IToggleViewLogic
     {

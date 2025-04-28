@@ -3,6 +3,7 @@
     using System.Windows;
     using CommunityToolkit.Mvvm.DependencyInjection;
     using CommunityToolkit.Mvvm.Messaging;
+    using Melody.Logic;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>
@@ -15,6 +16,7 @@
             Ioc.Default.ConfigureServices(
                 new ServiceCollection()
                 .AddSingleton<IToggleViewLogic, ToggleViewLogic>()
+                .AddSingleton<IMusicXmlLogic, MusicXmlLogic>()
                 .AddSingleton<IMessenger>(WeakReferenceMessenger.Default)
                 .BuildServiceProvider());
         }

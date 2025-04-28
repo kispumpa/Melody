@@ -1,8 +1,8 @@
-﻿namespace Melody.UI
+﻿namespace Melody.Logic
 {
     using CommunityToolkit.Mvvm.Messaging;
 
-    internal class ToggleViewLogic : IToggleViewLogic
+    public class ToggleViewLogic : IToggleViewLogic
     {
         private IMessenger messenger;
 
@@ -17,7 +17,7 @@
         public void ToggleView()
         {
             this.IsPianoRollView = !this.IsPianoRollView;
-            this.messenger.Send("View changed", "ViewResult");
+            this.messenger.Send($"View changed to {(this.IsPianoRollView ? "piano roll" : "sheet music")}", "ViewResult");
         }
     }
 }

@@ -17,4 +17,8 @@
     </PackageReference>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Melody.Logic\Melody.Logic.csproj" />
+  </ItemGroup>
+
 </Project>
