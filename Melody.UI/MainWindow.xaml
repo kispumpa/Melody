@@ -23,7 +23,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
-            <Button Content="Load MusicXML" Command="{Binding LoadMusicXmlCommand}" Margin="0,0,10,0" Padding="10,5"/>
+            <Button Content="Load MusicXML" Command="{Binding LoadLilypondCommand}" Margin="0,0,10,0" Padding="10,5"/>
             <ComboBox ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" 
                       Width="200" Margin="0,0,10,0" VerticalContentAlignment="Center"/>
             <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5"/>

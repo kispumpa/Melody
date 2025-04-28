@@ -16,7 +16,7 @@
             Ioc.Default.ConfigureServices(
                 new ServiceCollection()
                 .AddSingleton<IToggleViewLogic, ToggleViewLogic>()
-                .AddSingleton<IMusicXmlLogic, MusicXmlLogic>()
+                .AddSingleton<ILilypondLogic, LilypondLogic>()
                 .AddSingleton<IMessenger>(WeakReferenceMessenger.Default)
                 .BuildServiceProvider());
         }

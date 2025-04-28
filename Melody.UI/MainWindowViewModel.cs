@@ -8,22 +8,29 @@
     using CommunityToolkit.Mvvm.DependencyInjection;
     using CommunityToolkit.Mvvm.Input;
     using Melody.Logic;
+    using Microsoft.Win32;
 
     public class MainWindowViewModel : ObservableRecipient
     {
-        private IToggleViewLogic toggleLogic;
-        private IMusicXmlLogic musicXmlLogic;
+        private readonly OpenFileDialog openFileDialog = new OpenFileDialog
+        {
+            Filter = "MusicXML files (*.mxl)|*.mxl|All files (*.*)|*.*",
+            Title = "Select a MusicXML file",
+        };
 
-    // constructors
+        private IToggleViewLogic toggleLogic;
+        private ILilypondLogic lilypondLogic;
+
+        // constructors
         public MainWindowViewModel()
-            : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<IMusicXmlLogic>())
+            : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>())
         {
         }
 
-        public MainWindowViewModel(IToggleViewLogic toggleLogic, IMusicXmlLogic musicXmlLogic)
+        public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic)
         {
             this.toggleLogic = toggleLogic;
-            this.musicXmlLogic = musicXmlLogic;
+            this.lilypondLogic = lilypondLogic;
 
             this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
             {
@@ -38,8 +45,14 @@
 
             this.ToggleViewCommand = new RelayCommand(
                 () => this.toggleLogic.ToggleView());
-            this.LoadMusicXmlCommand = new RelayCommand(
-                () => this.musicXmlLogic.LoadMusicXml());
+            this.LoadLilypondCommand = new RelayCommand(() =>
+            {
+                if (openFileDialog.ShowDialog() == true)
+                {
+                    string filePath = openFileDialog.FileName;
+                    this.lilypondLogic.LoadLilypond(filePath);
+                }
+            });
         }
 
         public static bool IsInDesignMode
@@ -51,12 +64,12 @@
             }
         }
 
-    // ICommands
+        // ICommands
         public ICommand ToggleViewCommand { get; set; }
 
-        public ICommand LoadMusicXmlCommand { get; set; }
+        public ICommand LoadLilypondCommand { get; set; }
 
-    // Properties
+        // Properties
         public bool IsPianoRollView
         {
             get => this.toggleLogic.IsPianoRollView;
