@@ -12,6 +12,10 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
     <Grid>
+        <Grid.DataContext>
+            <local:MainWindowViewModel />
+        </Grid.DataContext>
+        
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -26,11 +30,6 @@
         </StackPanel>
 
         <Grid Grid.Row="1" Margin="10">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-
             <TextBlock Text="Sheet Music View" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" 
                        Visibility="{Binding IsSheetMusicView, Converter={StaticResource BoolToVisibilityConverter}}"/>
             <TextBlock Text="Piano Roll View" FontSize="18" FontWeight="Bold" Margin="0,0,0,10" 
