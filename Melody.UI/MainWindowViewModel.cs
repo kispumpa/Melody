@@ -20,10 +20,13 @@
 
         private IToggleViewLogic toggleLogic;
         private ILilypondLogic lilypondLogic;
+        private string svgSource;
 
         // constructors
         public MainWindowViewModel()
-            : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>())
+            : this(IsInDesignMode ? null : 
+                  Ioc.Default.GetService<IToggleViewLogic>(), 
+                  Ioc.Default.GetService<ILilypondLogic>())
         {
         }
 
@@ -40,6 +43,7 @@
             });
             this.Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
             {
+                this.OnPropertyChanged(nameof(this.IsSvgLoaded));
                 Debug.WriteLine(msg);
             });
 
@@ -51,6 +55,7 @@
                 {
                     string filePath = openFileDialog.FileName;
                     this.lilypondLogic.LoadLilypond(filePath);
+                    this.svgSource = this.lilypondLogic.SvgPath;
                 }
             });
         }
@@ -78,6 +83,24 @@
         public bool IsSheetMusicView
         {
             get => !this.toggleLogic.IsPianoRollView;
+        }
+
+        public bool IsSvgLoaded
+        {
+            get => !string.IsNullOrEmpty(this.svgSource);
+        }
+
+        public string SvgSource
+        {
+            get => this.svgSource;
+            set
+            {
+                if (this.svgSource != value)
+                {
+                    this.svgSource = value;
+                    this.OnPropertyChanged(); // kulon kell
+                }
+            }
         }
     }
 }
