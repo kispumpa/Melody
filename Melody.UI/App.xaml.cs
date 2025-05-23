@@ -17,6 +17,7 @@
                 new ServiceCollection()
                 .AddSingleton<IToggleViewLogic, ToggleViewLogic>()
                 .AddSingleton<ILilypondLogic, LilypondLogic>()
+                .AddSingleton<IPianorollLogic, PianorollLogic>()
                 .AddSingleton<IMessenger>(WeakReferenceMessenger.Default)
                 .BuildServiceProvider());
         }

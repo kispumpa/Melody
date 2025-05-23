@@ -18,27 +18,37 @@
             Title = "Select a MusicXML file",
         };
 
+        private readonly OpenFileDialog openFileDialogPianoroll = new OpenFileDialog
+        {
+            Filter = "Extracted MusicXML files (*.xml)|*.xml|All files (*.*)|*.*",
+            Title = "Select an extracted MusicXML file",
+        };
+
         private IToggleViewLogic toggleLogic;
         private ILilypondLogic lilypondLogic;
+        private IPianorollLogic pianorollLogic;
         private string svgSource;
 
         // constructors
         public MainWindowViewModel()
             : this(IsInDesignMode ? null : 
                   Ioc.Default.GetService<IToggleViewLogic>(), 
-                  Ioc.Default.GetService<ILilypondLogic>())
+                  Ioc.Default.GetService<ILilypondLogic>(),
+                  Ioc.Default.GetService<IPianorollLogic>())
         {
         }
 
-        public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic)
+        public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic, IPianorollLogic pianorollLogic)
         {
             this.toggleLogic = toggleLogic;
             this.lilypondLogic = lilypondLogic;
+            this.pianorollLogic = pianorollLogic;
 
             this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
             {
                 this.OnPropertyChanged(nameof(this.IsPianoRollView));
                 this.OnPropertyChanged(nameof(this.IsSheetMusicView));
+                this.OnPropertyChanged(nameof(this.ViewText));
                 Debug.WriteLine(msg);
             });
             this.Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
@@ -58,6 +68,14 @@
                     this.svgSource = this.lilypondLogic.SvgPath;
                 }
             });
+            this.LoadPianorollCommand = new RelayCommand(() =>
+            {
+                if (openFileDialogPianoroll.ShowDialog() == true)
+                {
+                    string filePath = openFileDialogPianoroll.FileName;
+                    this.pianorollLogic.LoadPianoroll(filePath);
+                }
+            });
         }
 
         public static bool IsInDesignMode
@@ -74,6 +92,8 @@
 
         public ICommand LoadLilypondCommand { get; set; }
 
+        public ICommand LoadPianorollCommand { get; set; }
+
         // Properties
         public bool IsPianoRollView
         {
@@ -88,6 +108,11 @@
         public bool IsSvgLoaded
         {
             get => !string.IsNullOrEmpty(this.svgSource);
+        }
+
+        public string ViewText
+        {
+            get => this.toggleLogic.IsPianoRollView ? "Piano roll" : "Sheet music";
         }
 
         public string SvgSource
