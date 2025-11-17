@@ -1,30 +1,23 @@
-﻿using System.Drawing;
-
+﻿
 namespace Melody.Logic.Models
 {
+
     public class Note
     {
-        private double yPosition;
-        private bool visibility;
+        public Accordinate X { get; set; }
 
-        public Accordinate X;
-        public Accordinate Y;
-        public string Pitch;
-        public Rectangle soundCell;
-        public bool Played = false;
+        public Accordinate Y { get; set; }
 
-        public double YPosition 
-        {
-            get => yPosition;
+        public string Pitch { get; set; }
 
-            set => yPosition = value;
-        }
+        //public Rectangle SoundCell { get; set; }
 
-        public bool Visibility 
-        {
-            get => visibility;
+        public bool Played { get; set; } = false;
 
-            set => visibility = value;
-        }
+        public double YPosition { get; set; }
+
+        public bool IsVisible { get; set; }
+
+        public int Velocity { get; set; } 
     }
 }

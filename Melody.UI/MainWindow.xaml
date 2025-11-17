@@ -14,9 +14,7 @@
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
     <Grid>
-        <Grid.DataContext>
-            <local:MainWindowViewModel/>
-        </Grid.DataContext>
+        
 
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
