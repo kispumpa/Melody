@@ -4,6 +4,7 @@
     using CommunityToolkit.Mvvm.DependencyInjection;
     using CommunityToolkit.Mvvm.Messaging;
     using Melody.Logic;
+    using Melody.Logic.Interfaces;
     using Microsoft.Extensions.DependencyInjection;
 
     /// <summary>

@@ -5,6 +5,7 @@
     using System.Runtime.CompilerServices;
     using System.Windows;
     using CommunityToolkit.Mvvm.Messaging;
+    using Melody.Logic.Interfaces;
 
     public class LilypondLogic : ILilypondLogic
     {

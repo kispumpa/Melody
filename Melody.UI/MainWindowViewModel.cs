@@ -7,7 +7,7 @@
     using CommunityToolkit.Mvvm.ComponentModel;
     using CommunityToolkit.Mvvm.DependencyInjection;
     using CommunityToolkit.Mvvm.Input;
-    using Melody.Logic;
+    using Melody.Logic.Interfaces;
     using Microsoft.Win32;
 
     public class MainWindowViewModel : ObservableRecipient

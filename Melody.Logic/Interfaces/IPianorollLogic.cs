@@ -1,4 +1,4 @@
-﻿namespace Melody.Logic
+﻿namespace Melody.Logic.Interfaces
 {
     public interface IPianorollLogic
     {
