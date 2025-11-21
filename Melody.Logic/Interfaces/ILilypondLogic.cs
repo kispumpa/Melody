@@ -1,8 +1,11 @@
-﻿namespace Melody.Logic.Interfaces
+﻿// Copyright (c) Matula Márton. All rights reserved.
+
+namespace Melody.Logic.Interfaces
 {
     public interface ILilypondLogic
     {
         string SvgPath { get; }
+
         void LoadLilypond(string mxlFilePath, string outputDirectory = null);
     }
 }

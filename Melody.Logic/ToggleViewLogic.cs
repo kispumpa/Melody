@@ -1,4 +1,6 @@
-﻿namespace Melody.Logic
+﻿// Copyright (c) Matula Márton. All rights reserved.
+
+namespace Melody.Logic
 {
     using CommunityToolkit.Mvvm.Messaging;
     using Melody.Logic.Interfaces;
