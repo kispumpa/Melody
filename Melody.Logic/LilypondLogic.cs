@@ -1,9 +1,8 @@
-﻿namespace Melody.Logic
+﻿// Copyright (c) Matula Márton. All rights reserved.
+
+namespace Melody.Logic
 {
     using System.Diagnostics;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using System.Windows;
     using CommunityToolkit.Mvvm.Messaging;
     using Melody.Logic.Interfaces;
 
@@ -11,12 +10,12 @@
     {
         private IMessenger messenger;
 
-        public string SvgPath { get; private set; }
-
         public LilypondLogic(IMessenger messenger)
         {
             this.messenger = messenger;
         }
+
+        public string SvgPath { get; private set; }
 
         public void LoadLilypond(string mxlFilePath, string outputDirectory = null)
         {

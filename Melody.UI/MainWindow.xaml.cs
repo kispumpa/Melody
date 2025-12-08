@@ -10,8 +10,6 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
 
-namespace Melody.UI
-{
     public partial class MainWindow : Window
     {
         // ===== KONSTANSOK =====
@@ -40,24 +38,23 @@ namespace Melody.UI
 
         public MainWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
-            noteRectangles = new Dictionary<Note, Rectangle>();
+            this.noteRectangles = new Dictionary<Note, Rectangle>();
 
-            viewModel = new MainWindowViewModel(
+            this.viewModel = new MainWindowViewModel(
                 Ioc.Default.GetService<IToggleViewLogic>(),
                 Ioc.Default.GetService<ILilypondLogic>(),
-                Ioc.Default.GetService<IPianorollLogic>()
-            );
+                Ioc.Default.GetService<IPianorollLogic>());
 
-            this.DataContext = viewModel;
-            viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            this.DataContext = this.viewModel;
+            this.viewModel.PropertyChanged += this.ViewModel_PropertyChanged;
 
             // 60 FPS rendering loop
             CompositionTarget.Rendering += UpdateFrame;
 
-            this.Loaded += MainWindow_Loaded;
-            this.Closing += MainWindow_Closing;
+            this.Loaded += this.MainWindow_Loaded;
+            this.Closing += this.MainWindow_Closing;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -65,26 +62,26 @@ namespace Melody.UI
             Debug.WriteLine("MainWindow loaded!");
 
             // MIDI eszköz inicializálás
-            if (viewModel.SelectedMidiDeviceIndex >= 0)
+            if (this.viewModel.SelectedMidiDeviceIndex >= 0)
             {
-                midiOut = new MidiOut(viewModel.SelectedMidiDeviceIndex);
+                this.midiOut = new MidiOut(this.viewModel.SelectedMidiDeviceIndex);
             }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(MainWindowViewModel.IsPianorollLoaded) && viewModel.IsPianorollLoaded)
+            if (e.PropertyName == nameof(MainWindowViewModel.IsPianorollLoaded) && this.viewModel.IsPianorollLoaded)
             {
                 Debug.WriteLine("Initializing piano roll...");
-                InitializePianoRoll();
+                this.InitializePianoRoll();
             }
             else if (e.PropertyName == nameof(MainWindowViewModel.SelectedMidiDeviceIndex))
             {
                 // MIDI eszköz váltás
-                midiOut?.Dispose();
-                if (viewModel.SelectedMidiDeviceIndex >= 0)
+                this.midiOut?.Dispose();
+                if (this.viewModel.SelectedMidiDeviceIndex >= 0)
                 {
-                    midiOut = new MidiOut(viewModel.SelectedMidiDeviceIndex);
+                    this.midiOut = new MidiOut(this.viewModel.SelectedMidiDeviceIndex);
                 }
             }
             else if (e.PropertyName == nameof(MainWindowViewModel.IsSvgLoaded) && viewModel.IsSvgLoaded)
@@ -105,7 +102,7 @@ namespace Melody.UI
                 isPianoRollInitialized = false;
             }
 
-            var logic = viewModel.PianorollLogic;
+            var logic = this.viewModel.PianorollLogic;
 
             pianoKeysCanvas = CreatePianoKeys(logic);
             pianorollGrid.Children.Add(pianoKeysCanvas);
@@ -114,10 +111,10 @@ namespace Melody.UI
             pianoRollCanvas = new Canvas
             {
                 Background = new SolidColorBrush(Color.FromRgb(200, 230, 255)),
-                ClipToBounds = true
+                ClipToBounds = true,
             };
-            pianorollGrid.Children.Add(pianoRollCanvas);
-            Grid.SetRow(pianoRollCanvas, 0);
+            this.pianorollGrid.Children.Add(this.pianoRollCanvas);
+            Grid.SetRow(this.pianoRollCanvas, 0);
 
             this.UpdateLayout();
             canvasHeight = pianorollGrid.RowDefinitions[0].ActualHeight;
@@ -134,7 +131,7 @@ namespace Melody.UI
             isPianoRollPlaying = true;
             isPianoRollInitialized = true;
 
-            Debug.WriteLine($"Piano roll initialized! Canvas height: {canvasHeight}, Notes: {logic.LoadedNotes.Count}");
+            Debug.WriteLine($"Piano roll initialized! Canvas height: {this.canvasHeight}, Notes: {logic.LoadedNotes.Count}");
         }
 
         private Canvas CreatePianoKeys(IPianorollLogic logic)
@@ -142,16 +139,16 @@ namespace Melody.UI
             var canvas = new Canvas
             {
                 Width = this.ActualWidth,
-                Height = pianorollGrid.RowDefinitions[1].ActualHeight
+                Height = this.pianorollGrid.RowDefinitions[1].ActualHeight,
             };
 
             double keyWidth = this.ActualWidth / logic.TotalVisibleNotes;
-            double keyHeight = pianorollGrid.RowDefinitions[1].ActualHeight;
+            double keyHeight = this.pianorollGrid.RowDefinitions[1].ActualHeight;
 
             for (int i = 0; i < logic.TotalVisibleNotes; i++)
             {
                 int noteValue = i % 7;
-                bool hasBlackKey = (noteValue == 0 || noteValue == 1 || noteValue == 3 || noteValue == 4 || noteValue == 5);
+                bool hasBlackKey = noteValue == 0 || noteValue == 1 || noteValue == 3 || noteValue == 4 || noteValue == 5;
 
                 var whiteKey = new Rectangle
                 {
@@ -159,7 +156,7 @@ namespace Melody.UI
                     Height = keyHeight,
                     Fill = Brushes.White,
                     Stroke = Brushes.Gray,
-                    StrokeThickness = 1
+                    StrokeThickness = 1,
                 };
                 canvas.Children.Add(whiteKey);
                 Canvas.SetLeft(whiteKey, keyWidth * i);
@@ -172,7 +169,7 @@ namespace Melody.UI
                         Height = keyHeight / 2,
                         Fill = Brushes.Black,
                         Stroke = Brushes.Gray,
-                        StrokeThickness = 1
+                        StrokeThickness = 1,
                     };
                     canvas.Children.Add(blackKey);
                     Canvas.SetLeft(blackKey, keyWidth * (i + 0.5));
@@ -183,12 +180,12 @@ namespace Melody.UI
                 {
                     var label = new TextBlock
                     {
-                        Text = $"{(Step)noteValue}{logic.MinOctave + i / 7}",
+                        Text = $"{(Step)noteValue}{logic.MinOctave + (i / 7)}",
                         FontSize = 11,
-                        Foreground = Brushes.Black
+                        Foreground = Brushes.Black,
                     };
                     canvas.Children.Add(label);
-                    Canvas.SetLeft(label, keyWidth * i + 2);
+                    Canvas.SetLeft(label, (keyWidth * i) + 2);
                     Canvas.SetBottom(label, 2);
                 }
             }
@@ -198,7 +195,7 @@ namespace Melody.UI
 
         private void CreateNotesInCanvas(IPianorollLogic logic)
         {
-            noteRectangles.Clear();
+            this.noteRectangles.Clear();
 
             foreach (var note in logic.LoadedNotes)
             {
@@ -213,11 +210,11 @@ namespace Melody.UI
                 };
 
                 Canvas.SetLeft(rect, note.X.Position);
-                pianoRollCanvas.Children.Add(rect);
-                noteRectangles[note] = rect;
+                this.pianoRollCanvas.Children.Add(rect);
+                this.noteRectangles[note] = rect;
             }
 
-            Debug.WriteLine($"Created {noteRectangles.Count} note rectangles");
+            Debug.WriteLine($"Created {this.noteRectangles.Count} note rectangles");
         }
 
         // ==================== SHEET MUSIC IMPLEMENTATION ====================
@@ -373,7 +370,7 @@ namespace Melody.UI
         {
             double elapsed = (DateTime.Now - pianoRollStartTime).TotalSeconds * PlaybackSpeed;
 
-            foreach (var kvp in noteRectangles)
+            foreach (var kvp in this.noteRectangles)
             {
                 var note = kvp.Key;
                 var rect = kvp.Value;
@@ -394,7 +391,7 @@ namespace Melody.UI
 
                 if (!note.Played && y <= 0 && y > -note.Y.Length)
                 {
-                    PlayNote(note.Pitch, (int)note.Y.Length);
+                    this.PlayNote(note.Pitch, (int)note.Y.Length);
                     note.Played = true;
                 }
             }
@@ -450,7 +447,10 @@ namespace Melody.UI
 
         private void PlayNote(string pitch, int durationPixels)
         {
-            if (midiOut == null) return;
+            if (this.midiOut == null)
+            {
+                return;
+            }
 
             try
             {
@@ -461,7 +461,7 @@ namespace Melody.UI
 
                 Task.Delay(durationMs).ContinueWith(_ =>
                 {
-                    midiOut?.Send(MidiMessage.StopNote(midiNote, 60, 1).RawData);
+                    this.midiOut?.Send(MidiMessage.StopNote(midiNote, 60, 1).RawData);
                 });
             }
             catch (Exception ex)
@@ -474,7 +474,7 @@ namespace Melody.UI
         {
             string step = pitch.Remove(pitch.Length - 1, 1);
             int octave = int.Parse(pitch.Substring(pitch.Length - 1, 1));
-            var midiNote = (int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + 12 * octave;
+            var midiNote = (int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + (12 * octave);
             return midiNote;
         }
 

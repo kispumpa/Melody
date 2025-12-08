@@ -1,13 +1,15 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.Mvvm.Input;
-using Melody.Logic.Interfaces;
-using NAudio.Midi;
+﻿// Copyright (c) Matula Márton. All rights reserved.
+
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.DependencyInjection;
+using CommunityToolkit.Mvvm.Input;
+using Melody.Logic.Interfaces;
+using NAudio.Midi;
 
 public class MainWindowViewModel : ObservableRecipient
 {
@@ -32,10 +34,7 @@ public class MainWindowViewModel : ObservableRecipient
     private int selectedMidiDeviceIndex;
 
     public MainWindowViewModel()
-        : this(IsInDesignMode ? null :
-              Ioc.Default.GetService<IToggleViewLogic>(),
-              Ioc.Default.GetService<ILilypondLogic>(),
-              Ioc.Default.GetService<IPianorollLogic>())
+        : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>(), Ioc.Default.GetService<IPianorollLogic>())
     {
     }
 
@@ -47,7 +46,7 @@ public class MainWindowViewModel : ObservableRecipient
         this.lilypondLogic = lilypondLogic;
         this.pianorollLogic = pianorollLogic;
 
-        InitializeMidiDevices();
+        this.InitializeMidiDevices();
 
         this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
         {
@@ -72,9 +71,9 @@ public class MainWindowViewModel : ObservableRecipient
 
         this.LoadLilypondCommand = new RelayCommand(() =>
         {
-            if (openFileDialog.ShowDialog() == true)
+            if (this.openFileDialog.ShowDialog() == true)
             {
-                string filePath = openFileDialog.FileName;
+                string filePath = this.openFileDialog.FileName;
                 this.lilypondLogic.LoadLilypond(filePath);
                 this.svgSource = this.lilypondLogic.SvgPath;
             }
@@ -82,9 +81,9 @@ public class MainWindowViewModel : ObservableRecipient
 
         this.LoadPianorollCommand = new RelayCommand(() =>
         {
-            if (openFileDialogPianoroll.ShowDialog() == true)
+            if (this.openFileDialogPianoroll.ShowDialog() == true)
             {
-                string filePath = openFileDialogPianoroll.FileName;
+                string filePath = this.openFileDialogPianoroll.FileName;
                 this.pianorollLogic.LoadPianoroll(filePath);
                 this.IsPianorollLoaded = true;
             }
@@ -102,45 +101,51 @@ public class MainWindowViewModel : ObservableRecipient
 
     // Commands
     public ICommand ToggleViewCommand { get; set; }
+
     public ICommand LoadLilypondCommand { get; set; }
+
     public ICommand LoadPianorollCommand { get; set; }
 
     // Logic
-    public IPianorollLogic PianorollLogic => pianorollLogic;
+    public IPianorollLogic PianorollLogic => this.pianorollLogic;
 
     // Properties
     public bool IsPianoRollView => this.toggleLogic.IsPianoRollView;
+
     public bool IsSheetMusicView => !this.toggleLogic.IsPianoRollView;
+
     public bool IsSvgLoaded => !string.IsNullOrEmpty(this.svgSource);
+
     public string ViewText => this.toggleLogic.IsPianoRollView ? "Piano roll" : "Sheet music";
 
     public string SvgSource
     {
-        get => svgSource;
-        set => SetProperty(ref svgSource, value);
+        get => this.svgSource;
+        set => this.SetProperty(ref this.svgSource, value);
     }
 
     public bool IsPianorollLoaded
     {
-        get => isPianorollLoaded;
-        set => SetProperty(ref isPianorollLoaded, value);
+        get => this.isPianorollLoaded;
+        set => this.SetProperty(ref this.isPianorollLoaded, value);
     }
 
-    public ObservableCollection<string> MidiDevices => midiDevices;
+    public ObservableCollection<string> MidiDevices => this.midiDevices;
 
     public int SelectedMidiDeviceIndex
     {
-        get => selectedMidiDeviceIndex;
-        set => SetProperty(ref selectedMidiDeviceIndex, value);
+        get => this.selectedMidiDeviceIndex;
+        set => this.SetProperty(ref this.selectedMidiDeviceIndex, value);
     }
 
     private void InitializeMidiDevices()
     {
-        midiDevices = new ObservableCollection<string>();
+        this.midiDevices = new ObservableCollection<string>();
         for (int i = 0; i < MidiOut.NumberOfDevices; i++)
         {
-            midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
+            this.midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
         }
-        selectedMidiDeviceIndex = midiDevices.Count > 0 ? 0 : -1;
+
+        this.selectedMidiDeviceIndex = this.midiDevices.Count > 0 ? 0 : -1;
     }
 }

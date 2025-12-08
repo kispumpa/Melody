@@ -1,7 +1,10 @@
-﻿
+﻿// Copyright (c) Matula Márton. All rights reserved.
+
 namespace Melody.Logic.Models
 {
-
+    /// <summary>
+    /// Represents a pianoroll note.
+    /// </summary>
     public class Note
     {
         public Accordinate X { get; set; }
@@ -10,14 +13,12 @@ namespace Melody.Logic.Models
 
         public string Pitch { get; set; }
 
-        //public Rectangle SoundCell { get; set; }
-
         public bool Played { get; set; } = false;
 
         public double YPosition { get; set; }
 
         public bool IsVisible { get; set; }
 
-        public int Velocity { get; set; } 
+        public int Velocity { get; set; }
     }
 }

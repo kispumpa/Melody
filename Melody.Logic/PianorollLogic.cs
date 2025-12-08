@@ -1,12 +1,12 @@
-﻿namespace Melody.Logic
+﻿// Copyright (c) Matula Márton. All rights reserved.
+
+namespace Melody.Logic
 {
     using CommunityToolkit.Mvvm.Messaging;
     using Melody.Logic.Interfaces;
     using Melody.Logic.Models;
     using MusicXml;
     using MusicXml.Domain;
-    using System;
-    using System.Collections.Generic;
     using static System.Formats.Asn1.AsnWriter;
 
     public class PianorollLogic : IPianorollLogic
@@ -23,21 +23,10 @@
         private int totalVisibleNotes;
         private DateTime startTime;
 
-        //??
+        // ??
         private double canvasHeight;
         private double windowWidth;
         private double windowHeight;
-        //??
-
-        public List<Models.Note> LoadedNotes { get; private set; }
-
-        public int TotalVisibleNotes => totalVisibleNotes;
-
-        public int MinOctave => minOctave;
-
-        public int MaxOctave => maxOctave;
-
-        public DateTime StartTime => this.startTime;
 
         public PianorollLogic(IMessenger messenger)
         {
@@ -46,6 +35,16 @@
             this.LoadedNotes = new List<Models.Note>();
         }
 
+        public List<Models.Note> LoadedNotes { get; private set; }
+
+        public int TotalVisibleNotes => this.totalVisibleNotes;
+
+        public int MinOctave => this.minOctave;
+
+        public int MaxOctave => this.maxOctave;
+
+        public DateTime StartTime => this.startTime;
+
         public void LoadPianoroll(string path)
         {
             try
@@ -53,8 +52,8 @@
                 this.messenger.Send("Loading piano roll...", "PianorollLoadResult");
 
                 this.score = MusicXmlParser.GetScore(path);
-                GetOctaveInterval();
-                this.totalVisibleNotes = CalculateVisibleNotes();
+                this.GetOctaveInterval();
+                this.totalVisibleNotes = this.CalculateVisibleNotes();
 
                 this.startTime = DateTime.Now;
 
@@ -68,29 +67,36 @@
 
         public void StoreNotes(double windowWidth)
         {
-            notes.Clear();
-            LoadedNotes.Clear();
+            this.notes.Clear();
+            this.LoadedNotes.Clear();
 
             double counter = 0;
             double durationSum = 300;
             double divisions = 0;
-            double lastDuration = 0; //for chords
+            double lastDuration = 0; // for chords
 
-            foreach (var part in score.Parts)
+            foreach (var part in this.score.Parts)
             {
                 foreach (var measure in part.Measures)
                 {
                     if (measure.Attributes != null && measure.Attributes.Divisions != 0)
+                    {
                         divisions = measure.Attributes.Divisions;
+                    }
 
                     foreach (var element in measure.MeasureElements)
                     {
                         if (element.Type != MeasureElementType.Note)
                         {
                             if (element.Type == MeasureElementType.Backup)
+                            {
                                 durationSum -= (1 / (4 * (divisions / ((MusicXml.Domain.Backup)element.Element).Duration))) * 240;
+                            }
                             else
+                            {
                                 durationSum += (1 / (4 * (divisions / ((MusicXml.Domain.Forward)element.Element).Duration))) * 240;
+                            }
+
                             continue;
                         }
 
@@ -120,19 +126,19 @@
                             X = new Accordinate
                             {
                                 Position = (windowWidth / this.TotalVisibleNotes) * index,
-                                Length = windowWidth / this.TotalVisibleNotes / (temPitch.Contains("b") ? 2 : 1)
+                                Length = windowWidth / this.TotalVisibleNotes / (temPitch.Contains("b") ? 2 : 1),
                             },
                             Y = new Accordinate
                             {
                                 Position = durationSum - (noteObj.IsChordTone ? lastDuration : 0),
-                                Length = (1 / (4 * (divisions / duration))) * 240
+                                Length = (1 / (4 * (divisions / duration))) * 240,
                             },
                             Pitch = temPitch,
-                            Velocity = noteObj.Voice //7:28
+                            Velocity = noteObj.Voice, // 7:28
                         };
 
-                        notes.Add(counter++, note);
-                        LoadedNotes.Add(note);
+                        this.notes.Add(counter++, note);
+                        this.LoadedNotes.Add(note);
 
                         if (!noteObj.IsChordTone)
                         {
@@ -146,11 +152,11 @@
 
         public void UpdateNotePositions(double canvasHeight)
         {
-            double elapsed = (DateTime.Now - startTime).TotalSeconds * PlaybackSpeed;
+            double elapsed = (DateTime.Now - this.startTime).TotalSeconds * PlaybackSpeed;
 
-            foreach (var note in LoadedNotes)
+            foreach (var note in this.LoadedNotes)
             {
-                double y = (note.Y.Position - elapsed * PixelsPerSecond);
+                double y = note.Y.Position - (elapsed * PixelsPerSecond);
 
                 note.YPosition = y;
                 note.IsVisible = y + note.Y.Length > 0 && y < canvasHeight;
@@ -168,7 +174,7 @@
             int maxOctave = 0;
             int minOctave = 10;
 
-            foreach (var part in score.Parts)
+            foreach (var part in this.score.Parts)
             {
                 foreach (var measure in part.Measures)
                 {
@@ -178,9 +184,13 @@
                         {
                             var noteOctave = ((MusicXml.Domain.Note)element.Element).Pitch.Octave;
                             if (noteOctave > maxOctave)
+                            {
                                 maxOctave = noteOctave;
+                            }
                             else if (noteOctave < minOctave)
+                            {
                                 minOctave = noteOctave;
+                            }
                         }
                     }
                 }
@@ -204,6 +214,7 @@
                 noteSum++;
                 this.maxOctave--;
             }
+
             noteSum += (this.maxOctave - this.minOctave + 1) * 7;
             return noteSum;
         }
