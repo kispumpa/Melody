@@ -1,28 +1,21 @@
-﻿namespace Melody.Logic
+﻿// Copyright (c) Matula Márton. All rights reserved.
+
+namespace Melody.Logic
 {
     using System.Diagnostics;
-    using System.Reflection;
-    using System.Runtime.CompilerServices;
-    using System.Windows;
     using CommunityToolkit.Mvvm.Messaging;
     using Melody.Logic.Interfaces;
 
     public class LilypondLogic : ILilypondLogic
     {
-        private static readonly string PythonPath = AppDomain.CurrentDomain.BaseDirectory + @"\lilypond-2.24.4-mingw-x86_64\lilypond-2.24.4\bin\python.exe";
-
-        private static readonly string LilypondPath = AppDomain.CurrentDomain.BaseDirectory + @"\lilypond-2.24.4-mingw-x86_64\lilypond-2.24.4\bin\lilypond.exe";
-
-        private static readonly string Mxml2lyPath = AppDomain.CurrentDomain.BaseDirectory + @"\lilypond-2.24.4-mingw-x86_64\lilypond-2.24.4\bin\musicxml2ly.py";
-
         private IMessenger messenger;
-
-        public string SvgPath { get; private set; }
 
         public LilypondLogic(IMessenger messenger)
         {
             this.messenger = messenger;
         }
+
+        public string SvgPath { get; private set; }
 
         public void LoadLilypond(string mxlFilePath, string outputDirectory = null)
         {
@@ -40,13 +33,15 @@
 
                 Directory.CreateDirectory(outputDirectory);
 
+                var config = ConfigHandler.ReadConfigFile("C:/Users/matul/OneDrive/Dokumentumok/melody_proj/Melody/Melody.UI/config.yaml");
+
                 string fileName = Path.GetFileNameWithoutExtension(mxlFilePath);
                 string lyFilePath = Path.Combine(outputDirectory, $"{fileName}.ly");
-                string svgFilePath = Path.Combine(outputDirectory, $"{fileName}-1.svg");
+                string svgFilePath = Path.Combine(outputDirectory, $"{fileName}.svg");
 
                 this.messenger.Send("Converting MusicXML to LilyPond format...", "MusicXmlLoadResult");
 
-                RunProcess(PythonPath, $"{Mxml2lyPath} --output={lyFilePath} {mxlFilePath}");
+                RunProcess(config.LilypondConfig.PythonPath, $"{config.LilypondConfig.Mxml2lyPath} --output=\"{lyFilePath}\" \"{mxlFilePath}\"");
 
                 if (!File.Exists(lyFilePath))
                 {
@@ -55,7 +50,7 @@
 
                 this.messenger.Send("Converting LilyPond to SVG...", "MusicXmlLoadResult");
 
-                RunProcess(LilypondPath, $"--output={outputDirectory} -fsvg {lyFilePath}");
+                RunProcess(config.LilypondConfig.LilypondPath, $"--output={outputDirectory} -fsvg {lyFilePath}");
 
                 if (!File.Exists(svgFilePath))
                 {

@@ -1,7 +1,12 @@
-﻿using Melody.Logic.Models;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.Logic.Interfaces
 {
+    using Melody.Logic.Models;
+
+    /// <summary>
+    /// Interface for pianoroll logic operations.
+    /// </summary>
     public interface IPianorollLogic
     {
         List<Note> LoadedNotes { get; }

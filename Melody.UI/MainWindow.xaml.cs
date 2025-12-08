@@ -2,12 +2,13 @@
 using Melody.Logic.Interfaces;
 using Melody.Logic.Models;
 using NAudio.Midi;
+using SharpVectors.Converters;
 using System.Diagnostics;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
-
 namespace Melody.UI
 {
     public partial class MainWindow : Window
@@ -16,38 +17,45 @@ namespace Melody.UI
         private const double PixelsPerSecond = 60;
         private const double PlaybackSpeed = 1.0;
 
-        // ===== MEZŐK =====
+        // ===== PIANO ROLL MEZŐK =====
         private Canvas pianoRollCanvas;
         private Canvas pianoKeysCanvas;
-        private MainWindowViewModel viewModel;
         private Dictionary<Note, Rectangle> noteRectangles;
-
-        private bool isInitialized = false;
-        private bool isPlaying = false;
-        private DateTime startTime;
+        private bool isPianoRollInitialized = false;
+        private bool isPianoRollPlaying = false;
+        private DateTime pianoRollStartTime;
         private double canvasHeight;
+
+        // ===== SHEET MUSIC MEZŐK =====
+        private bool isSheetMusicInitialized = false;
+        private bool isSheetMusicPlaying = false;
+        private DateTime sheetMusicStartTime;
+        private Line playbackCursor;
+        private double totalDuration = 0;
+
+        // ===== KÖZÖS MEZŐK =====
+        private MainWindowViewModel viewModel;
         private MidiOut midiOut;
 
         public MainWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
-            noteRectangles = new Dictionary<Note, Rectangle>();
+            this.noteRectangles = new Dictionary<Note, Rectangle>();
 
-            viewModel = new MainWindowViewModel(
+            this.viewModel = new MainWindowViewModel(
                 Ioc.Default.GetService<IToggleViewLogic>(),
                 Ioc.Default.GetService<ILilypondLogic>(),
-                Ioc.Default.GetService<IPianorollLogic>()
-            );
+                Ioc.Default.GetService<IPianorollLogic>());
 
-            this.DataContext = viewModel;
-            viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            this.DataContext = this.viewModel;
+            this.viewModel.PropertyChanged += this.ViewModel_PropertyChanged;
 
-            // ✅ 60 FPS rendering loop
+            // 60 FPS rendering loop
             CompositionTarget.Rendering += UpdateFrame;
 
-            this.Loaded += MainWindow_Loaded;
-            this.Closing += MainWindow_Closing;
+            this.Loaded += this.MainWindow_Loaded;
+            this.Closing += this.MainWindow_Closing;
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -55,111 +63,105 @@ namespace Melody.UI
             Debug.WriteLine("MainWindow loaded!");
 
             // MIDI eszköz inicializálás
-            if (viewModel.SelectedMidiDeviceIndex >= 0)
+            if (this.viewModel.SelectedMidiDeviceIndex >= 0)
             {
-                midiOut = new MidiOut(viewModel.SelectedMidiDeviceIndex);
+                this.midiOut = new MidiOut(this.viewModel.SelectedMidiDeviceIndex);
             }
         }
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(MainWindowViewModel.IsPianorollLoaded) && viewModel.IsPianorollLoaded)
+            if (e.PropertyName == nameof(MainWindowViewModel.IsPianorollLoaded) && this.viewModel.IsPianorollLoaded)
             {
                 Debug.WriteLine("Initializing piano roll...");
-                InitializePianoRoll();
+                this.InitializePianoRoll();
             }
             else if (e.PropertyName == nameof(MainWindowViewModel.SelectedMidiDeviceIndex))
             {
                 // MIDI eszköz váltás
-                midiOut?.Dispose();
-                if (viewModel.SelectedMidiDeviceIndex >= 0)
+                this.midiOut?.Dispose();
+                if (this.viewModel.SelectedMidiDeviceIndex >= 0)
                 {
-                    midiOut = new MidiOut(viewModel.SelectedMidiDeviceIndex);
+                    this.midiOut = new MidiOut(this.viewModel.SelectedMidiDeviceIndex);
                 }
+            }
+            else if (e.PropertyName == nameof(MainWindowViewModel.IsSvgLoaded) && viewModel.IsSvgLoaded)
+            {
+                Debug.WriteLine("Loading sheet music...");
+                InitializeSheetMusic();
             }
         }
 
-        // ===== PIANO ROLL INICIALIZÁLÁS =====
+        // ==================== PIANO ROLL IMPLEMENTATION ====================
+
         private void InitializePianoRoll()
         {
-            if (isInitialized)
+            if (isPianoRollInitialized)
             {
-                // Ha újra betöltünk, tisztítsuk meg
                 pianorollGrid.Children.Clear();
                 noteRectangles.Clear();
-                isInitialized = false;
+                isPianoRollInitialized = false;
             }
 
-            var logic = viewModel.PianorollLogic;
+            var logic = this.viewModel.PianorollLogic;
 
-            // Piano billentyűk létrehozása
             pianoKeysCanvas = CreatePianoKeys(logic);
             pianorollGrid.Children.Add(pianoKeysCanvas);
             Grid.SetRow(pianoKeysCanvas, 1);
 
-            // Piano roll canvas létrehozása
             pianoRollCanvas = new Canvas
             {
                 Background = new SolidColorBrush(Color.FromRgb(200, 230, 255)),
-                ClipToBounds = true
+                ClipToBounds = true,
             };
-            pianorollGrid.Children.Add(pianoRollCanvas);
-            Grid.SetRow(pianoRollCanvas, 0);
+            this.pianorollGrid.Children.Add(this.pianoRollCanvas);
+            Grid.SetRow(this.pianoRollCanvas, 0);
 
-            // Canvas magasság tárolása
-            this.UpdateLayout(); // ✅ Fontos: layout frissítés
+            this.UpdateLayout();
             canvasHeight = pianorollGrid.RowDefinitions[0].ActualHeight;
             if (canvasHeight <= 0)
             {
-                canvasHeight = 800; // Teszt érték
+                canvasHeight = 800;
                 Debug.WriteLine($"WARNING: Canvas height was 0, using {canvasHeight}");
             }
 
-            // Hangjegyek számítása
             logic.StoreNotes(this.ActualWidth);
-
-            // Rectangle-ek létrehozása
             CreateNotesInCanvas(logic);
 
-            // Lejátszás indítása
-            startTime = DateTime.Now;
-            isPlaying = true;
+            pianoRollStartTime = DateTime.Now;
+            isPianoRollPlaying = true;
+            isPianoRollInitialized = true;
 
-            isInitialized = true;
-
-            Debug.WriteLine($"Piano roll initialized! Canvas height: {canvasHeight}, Notes: {logic.LoadedNotes.Count}");
+            Debug.WriteLine($"Piano roll initialized! Canvas height: {this.canvasHeight}, Notes: {logic.LoadedNotes.Count}");
         }
 
-        // ===== PIANO BILLENTYŰK =====
         private Canvas CreatePianoKeys(IPianorollLogic logic)
         {
             var canvas = new Canvas
             {
                 Width = this.ActualWidth,
-                Height = pianorollGrid.RowDefinitions[1].ActualHeight
+                Height = this.pianorollGrid.RowDefinitions[1].ActualHeight,
             };
 
             double keyWidth = this.ActualWidth / logic.TotalVisibleNotes;
-            double keyHeight = pianorollGrid.RowDefinitions[1].ActualHeight;
+            double keyHeight = this.pianorollGrid.RowDefinitions[1].ActualHeight;
 
             for (int i = 0; i < logic.TotalVisibleNotes; i++)
             {
                 int noteValue = i % 7;
-                bool hasBlackKey = (noteValue == 0 || noteValue == 1 || noteValue == 3 || noteValue == 4 || noteValue == 5);
+                bool hasBlackKey = noteValue == 0 || noteValue == 1 || noteValue == 3 || noteValue == 4 || noteValue == 5;
 
-                // Fehér billentyű
                 var whiteKey = new Rectangle
                 {
                     Width = keyWidth,
                     Height = keyHeight,
                     Fill = Brushes.White,
                     Stroke = Brushes.Gray,
-                    StrokeThickness = 1
+                    StrokeThickness = 1,
                 };
                 canvas.Children.Add(whiteKey);
                 Canvas.SetLeft(whiteKey, keyWidth * i);
 
-                // Fekete billentyű
                 if (hasBlackKey)
                 {
                     var blackKey = new Rectangle
@@ -168,24 +170,23 @@ namespace Melody.UI
                         Height = keyHeight / 2,
                         Fill = Brushes.Black,
                         Stroke = Brushes.Gray,
-                        StrokeThickness = 1
+                        StrokeThickness = 1,
                     };
                     canvas.Children.Add(blackKey);
                     Canvas.SetLeft(blackKey, keyWidth * (i + 0.5));
                     Canvas.SetTop(blackKey, 0);
                 }
 
-                // C hangoknál címke
                 if (noteValue == 0)
                 {
                     var label = new TextBlock
                     {
-                        Text = $"{(Step)noteValue}{logic.MinOctave + i / 7}",
+                        Text = $"{(Step)noteValue}{logic.MinOctave + (i / 7)}",
                         FontSize = 11,
-                        Foreground = Brushes.Black
+                        Foreground = Brushes.Black,
                     };
                     canvas.Children.Add(label);
-                    Canvas.SetLeft(label, keyWidth * i + 2);
+                    Canvas.SetLeft(label, (keyWidth * i) + 2);
                     Canvas.SetBottom(label, 2);
                 }
             }
@@ -193,10 +194,9 @@ namespace Melody.UI
             return canvas;
         }
 
-        // ===== HANGJEGYEK LÉTREHOZÁSA =====
         private void CreateNotesInCanvas(IPianorollLogic logic)
         {
-            noteRectangles.Clear();
+            this.noteRectangles.Clear();
 
             foreach (var note in logic.LoadedNotes)
             {
@@ -204,36 +204,180 @@ namespace Melody.UI
                 {
                     Width = note.X.Length,
                     Height = note.Y.Length,
-                    Fill = new SolidColorBrush(Color.FromRgb(255, 165, 0)), // Narancs
+                    Fill = new SolidColorBrush(Color.FromRgb(255, 165, 0)),
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,
-                    Visibility = Visibility.Hidden // ✅ Kezdetben rejtett
+                    Visibility = Visibility.Hidden
                 };
 
                 Canvas.SetLeft(rect, note.X.Position);
-                pianoRollCanvas.Children.Add(rect);
-                noteRectangles[note] = rect;
+                this.pianoRollCanvas.Children.Add(rect);
+                this.noteRectangles[note] = rect;
             }
 
-            Debug.WriteLine($"Created {noteRectangles.Count} note rectangles");
+            Debug.WriteLine($"Created {this.noteRectangles.Count} note rectangles");
         }
 
-        // ===== FRAME FRISSÍTÉS (60 FPS) =====
+        // ==================== SHEET MUSIC IMPLEMENTATION ====================
+
+        private void InitializeSheetMusic()
+        {
+            try
+            {
+                string svgPath = viewModel.SvgSource;
+
+                if (string.IsNullOrEmpty(svgPath) || !File.Exists(svgPath))
+                {
+                    MessageBox.Show("SVG file not found!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
+
+                // SVG betöltése
+                svgViewbox.Source = new Uri(svgPath);
+
+                this.UpdateLayout();
+
+                // Playback kurzor létrehozása
+                if (playbackCursor == null)
+                {
+                    playbackCursor = new Line
+                    {
+                        Stroke = Brushes.Red,
+                        StrokeThickness = 2,
+                        Y1 = 0,
+                        Y2 = svgViewbox.ActualHeight,
+                        X1 = 0,
+                        X2 = 0,
+                        Visibility = Visibility.Hidden
+                    };
+                    highlightCanvas.Children.Add(playbackCursor);
+                }
+
+                // Hangjegyek időtartamának számítása
+                CalculateTotalDuration();
+
+                isSheetMusicInitialized = true;
+
+                Debug.WriteLine($"Sheet music initialized! SVG loaded from: {svgPath}");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Error loading sheet music: {ex.Message}", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                Debug.WriteLine($"Sheet music error: {ex}");
+            }
+        }
+
+        private void CalculateTotalDuration()
+        {
+            var logic = viewModel.PianorollLogic;
+
+            if (logic?.LoadedNotes != null && logic.LoadedNotes.Count > 0)
+            {
+                // A legutolsó hang végének időpontja
+                totalDuration = logic.LoadedNotes.Max(n => n.Y.Position + n.Y.Length) / PixelsPerSecond;
+            }
+            else
+            {
+                totalDuration = 60; // Alapértelmezett 60 másodperc
+            }
+
+            UpdateTimeDisplay(0);
+        }
+
+        private void PlayButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!isSheetMusicInitialized)
+            {
+                MessageBox.Show("Please load sheet music first!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            sheetMusicStartTime = DateTime.Now;
+            isSheetMusicPlaying = true;
+
+            playbackCursor.Visibility = Visibility.Visible;
+
+            playButton.IsEnabled = false;
+            pauseButton.IsEnabled = true;
+            stopButton.IsEnabled = true;
+
+            // Piano roll logika használata a hangok lejátszásához
+            var logic = viewModel.PianorollLogic;
+            if (logic?.LoadedNotes != null)
+            {
+                logic.StoreNotes(this.ActualWidth);
+
+                // Reset played flags
+                foreach (var note in logic.LoadedNotes)
+                {
+                    note.Played = false;
+                }
+            }
+
+            Debug.WriteLine("Playback started");
+        }
+
+        private void PauseButton_Click(object sender, RoutedEventArgs e)
+        {
+            isSheetMusicPlaying = false;
+            playButton.IsEnabled = true;
+            pauseButton.IsEnabled = false;
+
+            Debug.WriteLine("Playback paused");
+        }
+
+        private void StopButton_Click(object sender, RoutedEventArgs e)
+        {
+            isSheetMusicPlaying = false;
+            playbackCursor.Visibility = Visibility.Hidden;
+
+            playButton.IsEnabled = true;
+            pauseButton.IsEnabled = false;
+            stopButton.IsEnabled = false;
+
+            UpdateTimeDisplay(0);
+
+            // Reset played notes
+            var logic = viewModel.PianorollLogic;
+            if (logic?.LoadedNotes != null)
+            {
+                foreach (var note in logic.LoadedNotes)
+                {
+                    note.Played = false;
+                }
+            }
+
+            Debug.WriteLine("Playback stopped");
+        }
+
+        // ==================== UPDATE LOOP ====================
+
         private void UpdateFrame(object sender, EventArgs e)
         {
-            if (!isInitialized || !isPlaying || pianoRollCanvas == null)
-                return;
+            // Piano Roll frissítése
+            if (isPianoRollInitialized && isPianoRollPlaying && pianoRollCanvas != null)
+            {
+                UpdatePianoRollFrame();
+            }
 
-            double elapsed = (DateTime.Now - startTime).TotalSeconds * PlaybackSpeed;
+            // Sheet Music frissítése
+            if (isSheetMusicInitialized && isSheetMusicPlaying)
+            {
+                UpdateSheetMusicFrame();
+            }
+        }
 
-            foreach (var kvp in noteRectangles)
+        private void UpdatePianoRollFrame()
+        {
+            double elapsed = (DateTime.Now - pianoRollStartTime).TotalSeconds * PlaybackSpeed;
+
+            foreach (var kvp in this.noteRectangles)
             {
                 var note = kvp.Key;
                 var rect = kvp.Value;
 
                 double y = note.Y.Position - (elapsed * PixelsPerSecond);
 
-                // Láthatóság ellenőrzése
                 bool isVisible = (y + note.Y.Length > 0) && (y < canvasHeight);
 
                 if (isVisible)
@@ -246,33 +390,79 @@ namespace Melody.UI
                     rect.Visibility = Visibility.Hidden;
                 }
 
-                // Hang lejátszása (amikor eléri az aljat)
                 if (!note.Played && y <= 0 && y > -note.Y.Length)
                 {
-                    PlayNote(note.Pitch, (int)note.Y.Length);
+                    this.PlayNote(note.Pitch, (int)note.Y.Length);
                     note.Played = true;
                 }
             }
         }
 
-        // ===== MIDI LEJÁTSZÁS =====
+        private void UpdateSheetMusicFrame()
+        {
+            double elapsed = (DateTime.Now - sheetMusicStartTime).TotalSeconds * PlaybackSpeed;
+
+            // Kurzor mozgatása
+            double progress = elapsed / totalDuration;
+            double xPosition = progress * svgViewbox.ActualWidth;
+
+            playbackCursor.X1 = xPosition;
+            playbackCursor.X2 = xPosition;
+            playbackCursor.Y2 = svgViewbox.ActualHeight;
+
+            // Hangjegyek lejátszása
+            var logic = viewModel.PianorollLogic;
+            if (logic?.LoadedNotes != null)
+            {
+                foreach (var note in logic.LoadedNotes)
+                {
+                    double noteTime = note.Y.Position / PixelsPerSecond;
+
+                    if (!note.Played && elapsed >= noteTime)
+                    {
+                        PlayNote(note.Pitch, (int)note.Y.Length);
+                        note.Played = true;
+                    }
+                }
+            }
+
+            // Idő kijelzés frissítése
+            UpdateTimeDisplay(elapsed);
+
+            // Lejátszás vége
+            if (elapsed >= totalDuration)
+            {
+                StopButton_Click(null, null);
+            }
+        }
+
+        private void UpdateTimeDisplay(double currentTime)
+        {
+            TimeSpan current = TimeSpan.FromSeconds(currentTime);
+            TimeSpan total = TimeSpan.FromSeconds(totalDuration);
+
+            timeDisplay.Text = $"{current:mm\\:ss} / {total:mm\\:ss}";
+        }
+
+        // ==================== MIDI PLAYBACK ====================
+
         private void PlayNote(string pitch, int durationPixels)
         {
-            if (midiOut == null) return;
+            if (this.midiOut == null)
+            {
+                return;
+            }
 
             try
             {
                 int midiNote = PitchToMidi(pitch);
-
                 midiOut.Send(MidiMessage.StartNote(midiNote, 60, 1).RawData);
 
                 int durationMs = (int)((durationPixels / PixelsPerSecond) * 1000);
 
-                Debug.WriteLine($"Playing note {pitch} (MIDI {midiNote}) for {durationMs}ms");
-
                 Task.Delay(durationMs).ContinueWith(_ =>
                 {
-                    midiOut?.Send(MidiMessage.StopNote(midiNote, 60, 1).RawData);
+                    this.midiOut?.Send(MidiMessage.StopNote(midiNote, 60, 1).RawData);
                 });
             }
             catch (Exception ex)
@@ -285,16 +475,18 @@ namespace Melody.UI
         {
             string step = pitch.Remove(pitch.Length - 1, 1);
             int octave = int.Parse(pitch.Substring(pitch.Length - 1, 1));
-            var midiNote = (int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + 12 * octave;
+            var midiNote = (int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + (12 * octave);
             return midiNote;
         }
 
-        // ===== CLEANUP =====
+        // ==================== CLEANUP ====================
+
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             CompositionTarget.Rendering -= UpdateFrame;
             midiOut?.Dispose();
-            isPlaying = false;
+            isPianoRollPlaying = false;
+            isSheetMusicPlaying = false;
         }
     }
 }
