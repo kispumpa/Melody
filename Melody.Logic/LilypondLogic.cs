@@ -47,7 +47,14 @@ namespace Melody.Logic
                 {
                     throw new FileNotFoundException(message: $".ly file not exist here: {lyFilePath}");
                 }
-
+                string customPaper = @"
+\paper { 
+    page-breaking = #ly:one-line-auto-height-breaking 
+    ragged-right = ##f 
+    check-consistency = ##f
+}
+";
+                File.AppendAllText(lyFilePath, customPaper);
                 this.messenger.Send("Converting LilyPond to SVG...", "MusicXmlLoadResult");
 
                 RunProcess(config.LilypondConfig.LilypondPath, $"--output={outputDirectory} -fsvg {lyFilePath}");

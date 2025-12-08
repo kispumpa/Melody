@@ -30,6 +30,7 @@ public class MainWindowViewModel : ObservableRecipient
     private IPianorollLogic pianorollLogic;
     private string svgSource;
     private bool isPianorollLoaded;
+    private bool isSvgLoaded;
     private ObservableCollection<string> midiDevices;
     private int selectedMidiDeviceIndex;
 
@@ -76,6 +77,7 @@ public class MainWindowViewModel : ObservableRecipient
                 string filePath = this.openFileDialog.FileName;
                 this.lilypondLogic.LoadLilypond(filePath);
                 this.svgSource = this.lilypondLogic.SvgPath;
+                this.IsSvgLoaded = true;
             }
         });
 
@@ -114,7 +116,11 @@ public class MainWindowViewModel : ObservableRecipient
 
     public bool IsSheetMusicView => !this.toggleLogic.IsPianoRollView;
 
-    public bool IsSvgLoaded => !string.IsNullOrEmpty(this.svgSource);
+    public bool IsSvgLoaded
+    {
+        get => this.isSvgLoaded;
+        set => this.SetProperty(ref this.isSvgLoaded, value);
+    }
 
     public string ViewText => this.toggleLogic.IsPianoRollView ? "Piano roll" : "Sheet music";
 
@@ -139,13 +145,13 @@ public class MainWindowViewModel : ObservableRecipient
     }
 
     private void InitializeMidiDevices()
+{
+    this.midiDevices = new ObservableCollection<string>();
+    for (int i = 0; i < MidiOut.NumberOfDevices; i++)
     {
-        this.midiDevices = new ObservableCollection<string>();
-        for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-        {
-            this.midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
-        }
-
-        this.selectedMidiDeviceIndex = this.midiDevices.Count > 0 ? 0 : -1;
+        this.midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
     }
+
+    this.selectedMidiDeviceIndex = this.midiDevices.Count > 0 ? 0 : -1;
+}
 }

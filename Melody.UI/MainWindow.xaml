@@ -16,6 +16,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="11*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
@@ -45,32 +46,29 @@
         </Border>-->
 
         <!-- Kotta Nézet -->
-        <Grid x:Name="sheetMusicGrid" Grid.Row="1"
-              Visibility="{Binding IsSheetMusicView, Converter={StaticResource BoolToVisibilityConverter}}">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
+        <Grid x:Name="sheetMusicGrid" Grid.Row="1" ClipToBounds="True"
+      Visibility="{Binding IsSheetMusicView, Converter={StaticResource BoolToVisibilityConverter}}">
 
-            <!-- SVG Megjelenítő ScrollViewer-ben -->
-            <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
-                          Background="White">
-                <Grid>
-                    <!-- SVG Viewbox -->
-                    <svgc:SvgViewbox x:Name="svgViewbox" Stretch="Uniform"/>
+            <Grid x:Name="slidingScoreContainer" VerticalAlignment="Center">
+                <Grid.RenderTransform>
+                    <TranslateTransform x:Name="scoreTransform" X="0" Y="0"/>
+                </Grid.RenderTransform>
 
-                    <!-- Overlay Canvas a vizuális feedback-hez -->
-                    <Canvas x:Name="highlightCanvas" Background="Transparent" IsHitTestVisible="False"/>
-                </Grid>
-            </ScrollViewer>
+                <svgc:SvgViewbox x:Name="svgViewbox" Stretch="UniformToFill"/>
+            </Grid>
 
-            <!-- Vezérlők -->
-            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+            <Canvas x:Name="highlightCanvas" Background="Transparent" IsHitTestVisible="False">
+                <Line x:Name="myPlaybackCursor" Stroke="Red" StrokeThickness="3" 
+              X1="100" Y1="0" X2="100" Y2="1000" Visibility="Hidden"/>
+            </Canvas>
+
+        </Grid>
+        <!-- Vezérlők -->
+            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
                 <Button x:Name="playButton" Content="▶ Play" Padding="15,5" Margin="5" Click="PlayButton_Click"/>
                 <Button x:Name="pauseButton" Content="⏸ Pause" Padding="15,5" Margin="5" Click="PauseButton_Click" IsEnabled="False"/>
                 <Button x:Name="stopButton" Content="⏹ Stop" Padding="15,5" Margin="5" Click="StopButton_Click" IsEnabled="False"/>
                 <TextBlock x:Name="timeDisplay" Text="00:00 / 00:00" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14"/>
             </StackPanel>
-        </Grid>
     </Grid>
 </Window>

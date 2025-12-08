@@ -129,9 +129,11 @@ namespace Melody.UI
             logic.StoreNotes(this.ActualWidth);
             CreateNotesInCanvas(logic);
 
-            pianoRollStartTime = DateTime.Now;
-            isPianoRollPlaying = true;
+            //pianoRollStartTime = DateTime.Now;
+            isPianoRollPlaying = false;
             isPianoRollInitialized = true;
+            CalculateTotalDuration(); // Ez fontos, hogy tudjuk a hosszát
+            UpdateTimeDisplay(0);
 
             Debug.WriteLine($"Piano roll initialized! Canvas height: {this.canvasHeight}, Notes: {logic.LoadedNotes.Count}");
         }
@@ -239,24 +241,12 @@ namespace Melody.UI
                 this.UpdateLayout();
 
                 // Playback kurzor létrehozása
-                if (playbackCursor == null)
-                {
-                    playbackCursor = new Line
-                    {
-                        Stroke = Brushes.Red,
-                        StrokeThickness = 2,
-                        Y1 = 0,
-                        Y2 = svgViewbox.ActualHeight,
-                        X1 = 0,
-                        X2 = 0,
-                        Visibility = Visibility.Hidden
-                    };
-                    highlightCanvas.Children.Add(playbackCursor);
-                }
+                myPlaybackCursor.Y2 = this.sheetMusicGrid.ActualHeight;
 
-                // Hangjegyek időtartamának számítása
+                // Alaphelyzetbe állítjuk a transzformációt (késleltetés, hogy a Viewbox betöltsön)
+                scoreTransform.X = myPlaybackCursor.X1; // A kotta eleje a kurzornál kezdődik
+
                 CalculateTotalDuration();
-
                 isSheetMusicInitialized = true;
 
                 Debug.WriteLine($"Sheet music initialized! SVG loaded from: {svgPath}");
@@ -287,41 +277,58 @@ namespace Melody.UI
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!isSheetMusicInitialized)
+            // Ellenőrizzük, hogy van-e betöltve valami
+            if (!isSheetMusicInitialized && !isPianoRollInitialized)
             {
-                MessageBox.Show("Please load sheet music first!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Please load a file first!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            sheetMusicStartTime = DateTime.Now;
-            isSheetMusicPlaying = true;
-
-            playbackCursor.Visibility = Visibility.Visible;
-
+            // Gombok állapotának frissítése
             playButton.IsEnabled = false;
             pauseButton.IsEnabled = true;
             stopButton.IsEnabled = true;
 
-            // Piano roll logika használata a hangok lejátszásához
-            var logic = viewModel.PianorollLogic;
-            if (logic?.LoadedNotes != null)
+            // Logika elágaztatása a nézet alapján
+            if (viewModel.IsPianoRollView)
             {
-                logic.StoreNotes(this.ActualWidth);
-
-                // Reset played flags
-                foreach (var note in logic.LoadedNotes)
+                // PIANO ROLL INDÍTÁSA
+                if (isPianoRollInitialized)
                 {
-                    note.Played = false;
+                    // Újraindítás (egyszerűsített logika, hasonlóan a kottához)
+                    pianoRollStartTime = DateTime.Now;
+
+                    // Hangjegyek állapotának alaphelyzetbe állítása
+                    foreach (var note in viewModel.PianorollLogic.LoadedNotes)
+                    {
+                        note.Played = false;
+                    }
+
+                    isPianoRollPlaying = true;
                 }
             }
+            else
+            {
+                // SHEET MUSIC INDÍTÁSA (Meglévő kód)
+                sheetMusicStartTime = DateTime.Now;
+                isSheetMusicPlaying = true;
+                myPlaybackCursor.Visibility = Visibility.Visible;
 
-            Debug.WriteLine("Playback started");
+                // ... (meglévő Sheet Music logika) ...
+                var logic = viewModel.PianorollLogic;
+                if (logic?.LoadedNotes != null)
+                {
+                    logic.StoreNotes(this.ActualWidth);
+                    foreach (var note in logic.LoadedNotes) { note.Played = false; }
+                }
+            }
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
             isSheetMusicPlaying = false;
             playButton.IsEnabled = true;
+            isPianoRollPlaying = false;
             pauseButton.IsEnabled = false;
 
             Debug.WriteLine("Playback paused");
@@ -330,7 +337,7 @@ namespace Melody.UI
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
             isSheetMusicPlaying = false;
-            playbackCursor.Visibility = Visibility.Hidden;
+            isPianoRollPlaying = false;
 
             playButton.IsEnabled = true;
             pauseButton.IsEnabled = false;
@@ -346,6 +353,14 @@ namespace Melody.UI
                 {
                     note.Played = false;
                 }
+            }
+            if (isPianoRollInitialized)
+            {
+                // Frissítsük egyszer a frame-et 0 eltelt idővel, hogy visszaálljon a grafika
+                // Ehhez egy trükk: ideiglenesen beállítjuk a StartTime-ot "mostra", 
+                // meghívjuk a frissítést, majd kikapcsoljuk a playing flaget.
+                pianoRollStartTime = DateTime.Now;
+                UpdatePianoRollFrame();
             }
 
             Debug.WriteLine("Playback stopped");
@@ -371,7 +386,7 @@ namespace Melody.UI
         private void UpdatePianoRollFrame()
         {
             double elapsed = (DateTime.Now - pianoRollStartTime).TotalSeconds * PlaybackSpeed;
-
+            UpdateTimeDisplay(elapsed);
             foreach (var kvp in this.noteRectangles)
             {
                 var note = kvp.Key;
@@ -397,6 +412,10 @@ namespace Melody.UI
                     note.Played = true;
                 }
             }
+            if (elapsed >= totalDuration)
+            {
+                StopButton_Click(null, null);
+            }
         }
 
         private void UpdateSheetMusicFrame()
@@ -404,12 +423,17 @@ namespace Melody.UI
             double elapsed = (DateTime.Now - sheetMusicStartTime).TotalSeconds * PlaybackSpeed;
 
             // Kurzor mozgatása
-            double progress = elapsed / totalDuration;
-            double xPosition = progress * svgViewbox.ActualWidth;
+            double totalWidth = svgViewbox.ActualWidth;
 
-            playbackCursor.X1 = xPosition;
-            playbackCursor.X2 = xPosition;
-            playbackCursor.Y2 = svgViewbox.ActualHeight;
+            // 2. Kiszámoljuk, hol tartunk pixelben
+            // (Arányosítás: eltelt idő / teljes idő * teljes szélesség)
+            double currentPixelPos = (elapsed / totalDuration) * totalWidth;
+
+            // 3. Mozgatás:
+            // A kurzor fix pozíciója (pl. 100px) MÍNUSZ a jelenlegi pozíció.
+            // Így a kotta "befolyik" a kurzor alá.
+            double cursorFixedPosition = myPlaybackCursor.X1;
+            scoreTransform.X = cursorFixedPosition - currentPixelPos;
 
             // Hangjegyek lejátszása
             var logic = viewModel.PianorollLogic;
