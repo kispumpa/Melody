@@ -9,6 +9,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Shapes;
+
 namespace Melody.UI
 {
     public partial class MainWindow : Window
