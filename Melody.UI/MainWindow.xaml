@@ -4,10 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Melody.UI" 
-        xmlns:system="clr-namespace:System.Windows;assembly=PresentationFramework"
-        xmlns:sw="clr-namespace:System.Windows;assembly=PresentationCore" 
-        xmlns:svgc="http://sharpvectors.codeplex.com/runtime/" 
-        xmlns:svgc1="http://sharpvectors.codeplex.com/svgc/"
+        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
         mc:Ignorable="d"
         Title="Melody" WindowState="Maximized" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" d:DesignHeight="540" d:DesignWidth="960">
     <Window.Resources>
@@ -28,7 +25,7 @@
                     Visibility="{Binding IsPianoRollView, Converter={StaticResource BoolToVisibilityConverter}}"/>
             <ComboBox ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" 
                       Width="200" Margin="0,0,10,0" VerticalContentAlignment="Center"/>
-            <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5"/>
+            <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5" Margin="0,0,10,0"/>
             <TextBlock Text="{Binding ViewText}" FontSize="18" FontWeight="Bold" Padding="10,5" VerticalAlignment="Center"/>
         </StackPanel>
 
@@ -42,9 +39,38 @@
         </Grid>
         
         
-        <Border Grid.Row="2" BorderThickness="1" BorderBrush="Black"
+        <!--<Border Grid.Row="2" BorderThickness="1" BorderBrush="Black"
                 Visibility="{Binding IsSvgLoaded, Converter={StaticResource BoolToVisibilityConverter}}">
 
-        </Border>
+        </Border>-->
+
+        <!-- Kotta Nézet -->
+        <Grid x:Name="sheetMusicGrid" Grid.Row="1"
+              Visibility="{Binding IsSheetMusicView, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- SVG Megjelenítő ScrollViewer-ben -->
+            <ScrollViewer Grid.Row="0" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto"
+                          Background="White">
+                <Grid>
+                    <!-- SVG Viewbox -->
+                    <svgc:SvgViewbox x:Name="svgViewbox" Stretch="Uniform"/>
+
+                    <!-- Overlay Canvas a vizuális feedback-hez -->
+                    <Canvas x:Name="highlightCanvas" Background="Transparent" IsHitTestVisible="False"/>
+                </Grid>
+            </ScrollViewer>
+
+            <!-- Vezérlők -->
+            <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+                <Button x:Name="playButton" Content="▶ Play" Padding="15,5" Margin="5" Click="PlayButton_Click"/>
+                <Button x:Name="pauseButton" Content="⏸ Pause" Padding="15,5" Margin="5" Click="PauseButton_Click" IsEnabled="False"/>
+                <Button x:Name="stopButton" Content="⏹ Stop" Padding="15,5" Margin="5" Click="StopButton_Click" IsEnabled="False"/>
+                <TextBlock x:Name="timeDisplay" Text="00:00 / 00:00" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14"/>
+            </StackPanel>
+        </Grid>
     </Grid>
 </Window>

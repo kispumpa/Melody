@@ -1,0 +1,4 @@
+lilypondConfig:
+    pythonPath: "C:/Users/matul/OneDrive/Dokumentumok/melody_proj/Melody/lilypond-2.24.4-mingw-x86_64/lilypond-2.24.4/bin/python.exe"
+    lilypondPath: "C:/Users/matul/OneDrive/Dokumentumok/melody_proj/Melody/lilypond-2.24.4-mingw-x86_64/lilypond-2.24.4/bin/lilypond.exe"
+    mxml2lyPath: "C:/Users/matul/OneDrive/Dokumentumok/melody_proj/Melody/lilypond-2.24.4-mingw-x86_64/lilypond-2.24.4/bin/musicxml2ly.py"
