@@ -47,7 +47,8 @@ namespace Melody.UI
             this.viewModel = new MainWindowViewModel(
                 Ioc.Default.GetService<IToggleViewLogic>(),
                 Ioc.Default.GetService<ILilypondLogic>(),
-                Ioc.Default.GetService<IPianorollLogic>());
+                Ioc.Default.GetService<IPianorollLogic>(),
+                Ioc.Default.GetService<IMxlUnpacker>());
 
             this.DataContext = this.viewModel;
             this.viewModel.PropertyChanged += this.ViewModel_PropertyChanged;

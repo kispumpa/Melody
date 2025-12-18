@@ -28,6 +28,7 @@ public class MainWindowViewModel : ObservableRecipient
     private IToggleViewLogic toggleLogic;
     private ILilypondLogic lilypondLogic;
     private IPianorollLogic pianorollLogic;
+    private IMxlUnpacker mxlUnpacker;
     private string svgSource;
     private bool isPianorollLoaded;
     private bool isSvgLoaded;
@@ -35,17 +36,18 @@ public class MainWindowViewModel : ObservableRecipient
     private int selectedMidiDeviceIndex;
 
     public MainWindowViewModel()
-        : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>(), Ioc.Default.GetService<IPianorollLogic>())
+        : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>(), Ioc.Default.GetService<IPianorollLogic>(), Ioc.Default.GetService<IMxlUnpacker>())
     {
     }
 
-    public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic, IPianorollLogic pianorollLogic)
+    public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic, IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker)
     {
         this.IsActive = true;
 
         this.toggleLogic = toggleLogic;
         this.lilypondLogic = lilypondLogic;
         this.pianorollLogic = pianorollLogic;
+        this.mxlUnpacker = mxlUnpacker;
 
         this.InitializeMidiDevices();
 
@@ -90,6 +92,22 @@ public class MainWindowViewModel : ObservableRecipient
                 this.IsPianorollLoaded = true;
             }
         });
+
+        this.LoadSheetCommand = new RelayCommand(() =>
+        {
+            if (this.openFileDialog.ShowDialog() == true)
+            {
+
+                string filePath = this.openFileDialog.FileName;
+                this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
+                this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
+                this.svgSource = this.lilypondLogic.SvgPath;
+                this.IsSvgLoaded = true;
+
+                this.pianorollLogic.LoadPianoroll(this.mxlUnpacker.MusicXmlPath);
+                this.IsPianorollLoaded = true;
+            }
+        });
     }
 
     public static bool IsInDesignMode
@@ -107,6 +125,8 @@ public class MainWindowViewModel : ObservableRecipient
     public ICommand LoadLilypondCommand { get; set; }
 
     public ICommand LoadPianorollCommand { get; set; }
+
+    public ICommand LoadSheetCommand { get; set; }
 
     // Logic
     public IPianorollLogic PianorollLogic => this.pianorollLogic;

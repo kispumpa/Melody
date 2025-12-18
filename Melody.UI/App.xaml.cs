@@ -19,6 +19,7 @@
                 .AddSingleton<IToggleViewLogic, ToggleViewLogic>()
                 .AddSingleton<ILilypondLogic, LilypondLogic>()
                 .AddSingleton<IPianorollLogic, PianorollLogic>()
+                .AddSingleton<IMxlUnpacker, MxlUnpacker>()
                 .AddSingleton<IMessenger>(WeakReferenceMessenger.Default)
                 .BuildServiceProvider());
         }
