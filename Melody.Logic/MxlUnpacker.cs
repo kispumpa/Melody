@@ -1,20 +1,23 @@
-﻿using Melody.Logic.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.IO.Compression;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.Logic
 {
+    using System.IO.Compression;
+    using System.Xml.Linq;
+    using Melody.Logic.Interfaces;
+
+    /// <summary>Class for unzipping mxl file.</summary>
     public class MxlUnpacker : IMxlUnpacker
     {
+        /// <summary>Gets the mxl file's path.</summary>
         public string MxlPath { get; private set; }
 
+        /// <summary>Gets the musicxml file's path.</summary>
         public string MusicXmlPath { get; private set; }
 
+        /// <summary>Extract the MusicXML file from mxl.</summary>
+        /// <param name="mxlFilePath">The mxl file path.</param>
+        /// <returns>The MusicXML content.</returns>
         public string ExtractMusicXml(string mxlFilePath)
         {
             if (!File.Exists(mxlFilePath))
@@ -22,9 +25,9 @@ namespace Melody.Logic
                 throw new FileNotFoundException("Az MXL fájl nem található", mxlFilePath);
             }
 
-            MxlPath = mxlFilePath;
+            this.MxlPath = mxlFilePath;
 
-            using (ZipArchive archive = ZipFile.OpenRead(MxlPath))
+            using (ZipArchive archive = ZipFile.OpenRead(this.MxlPath))
             {
                 ZipArchiveEntry containerEntry = archive.GetEntry("META-INF/container.xml");
 
@@ -61,9 +64,11 @@ namespace Melody.Logic
                     return reader.ReadToEnd();
                 }
             }
-
         }
 
+        /// <summary>Just extracts the mxl file to the given directory.</summary>
+        /// <param name="mxlFilePath">The mxl file path.</param>
+        /// <param name="destinationPath">The destination directory path.</param>
         public void ExtractToDirectory(string mxlFilePath, string destinationPath)
         {
             if (!File.Exists(mxlFilePath))
@@ -71,22 +76,25 @@ namespace Melody.Logic
                 throw new FileNotFoundException("Az MXL fájl nem található", mxlFilePath);
             }
 
-            MxlPath = mxlFilePath;
+            this.MxlPath = mxlFilePath;
 
             Directory.CreateDirectory(destinationPath);
 
-            ZipFile.ExtractToDirectory(MxlPath, destinationPath);
+            ZipFile.ExtractToDirectory(this.MxlPath, destinationPath);
 
             Console.WriteLine($"MXL fájl kicsomagolva ide: {destinationPath}");
         }
 
+        /// <summary>Extracts the mxl file with <see cref="ExtractMusicXml(string)"/> and saves it to the given output path.</summary>
+        /// <param name="mxlFilePath">The mxl file path.</param>
+        /// <param name="outputXmlPath">The output xml file path.</param>
         public void ExtractAndSave(string mxlFilePath, string outputXmlPath)
         {
-            string musicXmlContent = ExtractMusicXml(mxlFilePath);
+            string musicXmlContent = this.ExtractMusicXml(mxlFilePath);
             File.WriteAllText(outputXmlPath, musicXmlContent);
 
             Console.WriteLine($"MusicXML mentve ide: {outputXmlPath}");
-            MusicXmlPath = outputXmlPath;
+            this.MusicXmlPath = outputXmlPath;
         }
     }
 }
