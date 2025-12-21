@@ -4,11 +4,10 @@ namespace Melody.Logic.Interfaces
 {
     using Melody.Logic.Models;
 
-    /// <summary>
-    /// Interface for pianoroll logic operations.
-    /// </summary>
+    /// <summary>Interface for <see cref="PianorollLogic"/> class.</summary>
     public interface IPianorollLogic
     {
+
         List<Note> LoadedNotes { get; }
 
         int TotalVisibleNotes { get; }

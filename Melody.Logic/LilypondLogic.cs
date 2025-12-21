@@ -6,17 +6,24 @@ namespace Melody.Logic
     using CommunityToolkit.Mvvm.Messaging;
     using Melody.Logic.Interfaces;
 
+    /// <summary>Handles the conversion of MusicXML files to LilyPond format and generates SVG files.</summary>
     public class LilypondLogic : ILilypondLogic
     {
         private IMessenger messenger;
 
+        /// <summary>Initializes a new instance of the <see cref="LilypondLogic"/> class.</summary>
+        /// <param name="messenger">The messenger for sending notifications.</param>
         public LilypondLogic(IMessenger messenger)
         {
             this.messenger = messenger;
         }
 
+        /// <summary>Gets the path of the generated svg.</summary>
         public string SvgPath { get; private set; }
 
+        /// <summary>Loads a MusicXML file and converts it to LilyPond format, then generates an SVG from it.</summary>
+        /// <param name="mxlFilePath">The path of the MusicXML file to load.</param>
+        /// <param name="outputDirectory">The directory where the output SVG will be saved. If null, a default directory is used.</param>
         public void LoadLilypond(string mxlFilePath, string outputDirectory = null)
         {
             try
@@ -47,6 +54,7 @@ namespace Melody.Logic
                 {
                     throw new FileNotFoundException(message: $".ly file not exist here: {lyFilePath}");
                 }
+
                 string customPaper = @"
 \paper { 
     page-breaking = #ly:one-line-auto-height-breaking 
