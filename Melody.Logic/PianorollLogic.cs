@@ -7,8 +7,8 @@ namespace Melody.Logic
     using Melody.Logic.Models;
     using MusicXml;
     using MusicXml.Domain;
-    using static System.Formats.Asn1.AsnWriter;
 
+    /// <summary>Logic for piano roll visualization and note management.</summary>
     public class PianorollLogic : IPianorollLogic
     {
         private const double PixelsPerSecond = 60;
@@ -22,11 +22,6 @@ namespace Melody.Logic
         private int minIndex;
         private int totalVisibleNotes;
         private DateTime startTime;
-
-        // ??
-        private double canvasHeight;
-        private double windowWidth;
-        private double windowHeight;
 
         public PianorollLogic(IMessenger messenger)
         {
@@ -45,11 +40,11 @@ namespace Melody.Logic
 
         public DateTime StartTime => this.startTime;
 
-        public void LoadPianoroll(string path)
+        public void InitializePianoRoll(string path)
         {
             try
             {
-                this.messenger.Send("Loading piano roll...", "PianorollLoadResult");
+                this.messenger.Send("Initializing piano roll...", "PianorollLoadResult");
 
                 this.score = MusicXmlParser.GetScore(path);
                 this.GetOctaveInterval();
@@ -57,16 +52,18 @@ namespace Melody.Logic
 
                 this.startTime = DateTime.Now;
 
-                this.messenger.Send("Piano roll loaded successfully", "PianorollLoadResult");
+                this.messenger.Send("Piano roll initialized successfully", "PianorollLoadResult");
             }
             catch (Exception ex)
             {
-                this.messenger.Send($"Error loading piano roll: {ex.Message}", "PianorollLoadResult");
+                this.messenger.Send($"Error in initializing piano roll: {ex.Message}", "PianorollLoadResult");
             }
         }
 
         public void StoreNotes(double windowWidth)
         {
+            this.messenger.Send("Storing notes for piano roll...", "PianorollLoadResult");
+
             this.notes.Clear();
             this.LoadedNotes.Clear();
 
@@ -148,6 +145,8 @@ namespace Melody.Logic
                     }
                 }
             }
+
+            this.messenger.Send("Notes stored successfully for piano roll.", "PianorollLoadResult");
         }
 
         public void UpdateNotePositions(double canvasHeight)

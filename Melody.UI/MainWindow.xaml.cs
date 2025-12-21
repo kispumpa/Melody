@@ -75,7 +75,7 @@ namespace Melody.UI
         {
             if (e.PropertyName == nameof(MainWindowViewModel.IsPianorollLoaded) && this.viewModel.IsPianorollLoaded)
             {
-                Debug.WriteLine("Initializing piano roll...");
+                Debug.WriteLine("Loading piano roll...");
                 this.InitializePianoRoll();
             }
             else if (e.PropertyName == nameof(MainWindowViewModel.SelectedMidiDeviceIndex))
@@ -136,7 +136,7 @@ namespace Melody.UI
             CalculateTotalDuration(); // Ez fontos, hogy tudjuk a hosszát
             UpdateTimeDisplay(0);
 
-            Debug.WriteLine($"Piano roll initialized! Canvas height: {this.canvasHeight}, Notes: {logic.LoadedNotes.Count}");
+            Debug.WriteLine($"Piano roll loaded! Canvas height: {this.canvasHeight}, Notes: {logic.LoadedNotes.Count}");
         }
 
         private Canvas CreatePianoKeys(IPianorollLogic logic)
@@ -232,12 +232,12 @@ namespace Melody.UI
 
                 if (string.IsNullOrEmpty(svgPath) || !File.Exists(svgPath))
                 {
-                    MessageBox.Show("SVG file not found!", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    Debug.WriteLine("SVG file not found!");
                     return;
                 }
 
                 // SVG betöltése
-                svgViewbox.Source = new Uri(svgPath);
+                svgViewbox.Source = new Uri(System.IO.Path.GetFullPath(svgPath));
 
                 this.UpdateLayout();
 

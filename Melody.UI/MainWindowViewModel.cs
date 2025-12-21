@@ -88,7 +88,7 @@ public class MainWindowViewModel : ObservableRecipient
             if (this.openFileDialogPianoroll.ShowDialog() == true)
             {
                 string filePath = this.openFileDialogPianoroll.FileName;
-                this.pianorollLogic.LoadPianoroll(filePath);
+                this.pianorollLogic.InitializePianoRoll(filePath);
                 this.IsPianorollLoaded = true;
             }
         });
@@ -102,10 +102,10 @@ public class MainWindowViewModel : ObservableRecipient
                 this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
                 this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
                 this.svgSource = this.lilypondLogic.SvgPath;
-                this.IsSvgLoaded = true;
+                this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
+                this.IsPianorollLoaded = true; // TODO: parhuzamositas
+                this.IsSvgLoaded = true; // TODO: parhuzamositas
 
-                this.pianorollLogic.LoadPianoroll(this.mxlUnpacker.MusicXmlPath);
-                this.IsPianorollLoaded = true;
             }
         });
     }

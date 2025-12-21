@@ -18,7 +18,7 @@ namespace Melody.Logic.Interfaces
 
         DateTime StartTime { get; }
 
-        void LoadPianoroll(string path);
+        void InitializePianoRoll(string path);
 
         void StoreNotes(double windowWidth);
 

@@ -57,14 +57,37 @@ namespace Melody.Logic
 
                 string customPaper = @"
 \paper { 
-    page-breaking = #ly:one-line-auto-height-breaking 
+    page-breaking = #ly:one-line-breaking 
     ragged-right = ##f 
     check-consistency = ##f
 }
 ";
-                File.AppendAllText(lyFilePath, customPaper);
-                this.messenger.Send("Converting LilyPond to SVG...", "MusicXmlLoadResult");
+                //File.AppendAllText(lyFilePath, customPaper);
+                string originalContent = File.ReadAllText(lyFilePath);
 
+                //// 3. Az elejére illesztjük az új beállításokat és visszaírjuk
+                //File.WriteAllText(lyFilePath, customPaper + Environment.NewLine + originalContent);
+                //this.messenger.Send("Converting LilyPond to SVG...", "MusicXmlLoadResult");
+
+
+                string newRule = "    page-breaking = #ly:one-line-breaking" + Environment.NewLine;
+
+                string updatedContent;
+
+                if (originalContent.Contains("\\paper {"))
+                {
+                    // Ha már van \paper blokk, beszúrjuk a nyitó zárójel után
+                    updatedContent = originalContent.Replace("\\paper {", "\\paper {" + Environment.NewLine + newRule);
+                }
+                else
+                {
+                    // Ha véletlenül mégsem lenne (biztonsági játék), az elejére tesszük
+                    updatedContent = "\\paper {" + Environment.NewLine + newRule + "}" + Environment.NewLine + originalContent;
+                }
+
+                File.WriteAllText(lyFilePath, updatedContent);
+
+                //RunProcess(config.LilypondConfig.LilypondPath, $"-dbackend=svg -dno-pages -dsvg-woff=##f --output={outputDirectory} -fsvg {lyFilePath}");
                 RunProcess(config.LilypondConfig.LilypondPath, $"--output={outputDirectory} -fsvg {lyFilePath}");
 
                 if (!File.Exists(svgFilePath))
@@ -73,7 +96,7 @@ namespace Melody.Logic
                 }
 
                 this.messenger.Send($"SVG created successfully: {outputDirectory}", "MusicXmlLoadResult");
-                this.SvgPath = svgFilePath;
+                this.SvgPath = svgFilePath.Replace("\\", "/");
             }
             catch (Exception ex)
             {
