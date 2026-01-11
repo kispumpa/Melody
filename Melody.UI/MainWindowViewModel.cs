@@ -29,9 +29,9 @@ public class MainWindowViewModel : ObservableRecipient
     private ILilypondLogic lilypondLogic;
     private IPianorollLogic pianorollLogic;
     private IMxlUnpacker mxlUnpacker;
-    private string svgSource;
+    private ObservableCollection<string> imagePaths;
     private bool isPianorollLoaded;
-    private bool isSvgLoaded;
+    private bool isImageLoaded;
     private ObservableCollection<string> midiDevices;
     private int selectedMidiDeviceIndex;
 
@@ -48,7 +48,10 @@ public class MainWindowViewModel : ObservableRecipient
         this.lilypondLogic = lilypondLogic;
         this.pianorollLogic = pianorollLogic;
         this.mxlUnpacker = mxlUnpacker;
+        this.isPianorollLoaded = false;
+        this.isImageLoaded = false;
 
+        this.imagePaths = new ObservableCollection<string>();
         this.InitializeMidiDevices();
 
         this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
@@ -61,7 +64,12 @@ public class MainWindowViewModel : ObservableRecipient
 
         this.Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
         {
-            this.OnPropertyChanged(nameof(this.IsSvgLoaded));
+            if (msg.Contains("successfully"))
+            {
+                isImageLoaded = true;
+                this.UpdateImagePaths();
+            }
+            this.OnPropertyChanged(nameof(this.IsImageLoaded));
             Debug.WriteLine(msg);
         });
 
@@ -78,8 +86,8 @@ public class MainWindowViewModel : ObservableRecipient
             {
                 string filePath = this.openFileDialog.FileName;
                 this.lilypondLogic.LoadLilypond(filePath);
-                this.svgSource = this.lilypondLogic.SvgPath;
-                this.IsSvgLoaded = true;
+                this.UpdateImagePaths();
+                this.IsImageLoaded = true;
             }
         });
 
@@ -97,15 +105,12 @@ public class MainWindowViewModel : ObservableRecipient
         {
             if (this.openFileDialog.ShowDialog() == true)
             {
-
                 string filePath = this.openFileDialog.FileName;
                 this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
                 this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
-                this.svgSource = this.lilypondLogic.SvgPath;
                 this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
-                this.IsPianorollLoaded = true; // TODO: parhuzamositas
-                this.IsSvgLoaded = true; // TODO: parhuzamositas
-
+                this.IsPianorollLoaded = true;
+                this.IsImageLoaded = true;
             }
         });
     }
@@ -136,18 +141,18 @@ public class MainWindowViewModel : ObservableRecipient
 
     public bool IsSheetMusicView => !this.toggleLogic.IsPianoRollView;
 
-    public bool IsSvgLoaded
+    public bool IsImageLoaded
     {
-        get => this.isSvgLoaded;
-        set => this.SetProperty(ref this.isSvgLoaded, value);
+        get => this.isImageLoaded;
+        set => this.SetProperty(ref this.isImageLoaded, value);
     }
 
     public string ViewText => this.toggleLogic.IsPianoRollView ? "Piano roll" : "Sheet music";
 
-    public string SvgSource
+    public ObservableCollection<string> ImagePaths
     {
-        get => this.svgSource;
-        set => this.SetProperty(ref this.svgSource, value);
+        get => this.imagePaths;
+        set => this.SetProperty(ref this.imagePaths, value);
     }
 
     public bool IsPianorollLoaded
@@ -165,13 +170,22 @@ public class MainWindowViewModel : ObservableRecipient
     }
 
     private void InitializeMidiDevices()
-{
-    this.midiDevices = new ObservableCollection<string>();
-    for (int i = 0; i < MidiOut.NumberOfDevices; i++)
     {
-        this.midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
+        this.midiDevices = new ObservableCollection<string>();
+        for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+        {
+            this.midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
+        }
+
+        this.selectedMidiDeviceIndex = this.midiDevices.Count > 0 ? 0 : -1;
     }
 
-    this.selectedMidiDeviceIndex = this.midiDevices.Count > 0 ? 0 : -1;
-}
+    private void UpdateImagePaths()
+    {
+        this.imagePaths.Clear();
+        foreach (var path in this.lilypondLogic.GeneratedPngPaths)
+        {
+            this.imagePaths.Add(path);
+        }
+    }
 }

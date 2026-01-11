@@ -6,7 +6,7 @@ namespace Melody.Logic
     using CommunityToolkit.Mvvm.Messaging;
     using Melody.Logic.Interfaces;
 
-    /// <summary>Handles the conversion of MusicXML files to LilyPond format and generates SVG files.</summary>
+    /// <summary>Handles the conversion of MusicXML files to LilyPond format and generates PNG files.</summary>
     public class LilypondLogic : ILilypondLogic
     {
         private IMessenger messenger;
@@ -18,12 +18,15 @@ namespace Melody.Logic
             this.messenger = messenger;
         }
 
-        /// <summary>Gets the path of the generated svg.</summary>
-        public string SvgPath { get; private set; }
+        /// <summary>Gets the path of the PNG output directory.</summary>
+        public string PngOutputDirectory { get; private set; }
 
-        /// <summary>Loads a MusicXML file and converts it to LilyPond format, then generates an SVG from it.</summary>
+        /// <summary>Gets the list of generated PNG file paths.</summary>
+        public List<string> GeneratedPngPaths { get; private set; } = new List<string>();
+
+        /// <summary>Loads a MusicXML file and converts it to LilyPond format, then generates PNG files from it.</summary>
         /// <param name="mxlFilePath">The path of the MusicXML file to load.</param>
-        /// <param name="outputDirectory">The directory where the output SVG will be saved. If null, a default directory is used.</param>
+        /// <param name="outputDirectory">The directory where the output PNGs will be saved. If null, a default directory is used.</param>
         public void LoadLilypond(string mxlFilePath, string outputDirectory = null)
         {
             try
@@ -38,13 +41,17 @@ namespace Melody.Logic
                     outputDirectory = Path.GetDirectoryName(mxlFilePath);
                 }
 
-                Directory.CreateDirectory(outputDirectory);
+                // Létrehozunk egy almappát a PNG-knek
+                string fileName = Path.GetFileNameWithoutExtension(mxlFilePath);
+                string pngOutputDir = Path.Combine(outputDirectory, $"{fileName}_pngs");
+                Directory.CreateDirectory(pngOutputDir);
+
+                this.PngOutputDirectory = pngOutputDir;
+                this.GeneratedPngPaths.Clear();
 
                 var config = ConfigHandler.ReadConfigFile("C:/Users/matul/OneDrive/Dokumentumok/melody_proj/Melody/Melody.UI/config.yaml");
 
-                string fileName = Path.GetFileNameWithoutExtension(mxlFilePath);
                 string lyFilePath = Path.Combine(outputDirectory, $"{fileName}.ly");
-                string svgFilePath = Path.Combine(outputDirectory, $"{fileName}.svg");
 
                 this.messenger.Send("Converting MusicXML to LilyPond format...", "MusicXmlLoadResult");
 
@@ -55,48 +62,40 @@ namespace Melody.Logic
                     throw new FileNotFoundException(message: $".ly file not exist here: {lyFilePath}");
                 }
 
-                string customPaper = @"
-\paper { 
-    page-breaking = #ly:one-line-breaking 
-    ragged-right = ##f 
-    check-consistency = ##f
-}
-";
-                //File.AppendAllText(lyFilePath, customPaper);
-                string originalContent = File.ReadAllText(lyFilePath);
-
-                //// 3. Az elejére illesztjük az új beállításokat és visszaírjuk
-                //File.WriteAllText(lyFilePath, customPaper + Environment.NewLine + originalContent);
-                //this.messenger.Send("Converting LilyPond to SVG...", "MusicXmlLoadResult");
-
-
                 string newRule = "    page-breaking = #ly:one-line-breaking" + Environment.NewLine;
-
+                string originalContent = File.ReadAllText(lyFilePath);
                 string updatedContent;
 
                 if (originalContent.Contains("\\paper {"))
                 {
-                    // Ha már van \paper blokk, beszúrjuk a nyitó zárójel után
                     updatedContent = originalContent.Replace("\\paper {", "\\paper {" + Environment.NewLine + newRule);
                 }
                 else
                 {
-                    // Ha véletlenül mégsem lenne (biztonsági játék), az elejére tesszük
                     updatedContent = "\\paper {" + Environment.NewLine + newRule + "}" + Environment.NewLine + originalContent;
                 }
 
                 File.WriteAllText(lyFilePath, updatedContent);
 
-                //RunProcess(config.LilypondConfig.LilypondPath, $"-dbackend=svg -dno-pages -dsvg-woff=##f --output={outputDirectory} -fsvg {lyFilePath}");
-                RunProcess(config.LilypondConfig.LilypondPath, $"--output={outputDirectory} -fsvg {lyFilePath}");
+                this.messenger.Send("Converting LilyPond to PNG...", "MusicXmlLoadResult");
 
-                if (!File.Exists(svgFilePath))
+                // PNG generálás 300 DPI felbontással (jobb minőség)
+                RunProcess(config.LilypondConfig.LilypondPath, $"--png -dresolution=300 --output={pngOutputDir}/{fileName} {lyFilePath}");
+
+                // Összegyűjtjük az összes generált PNG-t
+                var pngFiles = Directory.GetFiles(pngOutputDir, "*.png")
+                    .OrderBy(f => f)
+                    .ToList();
+
+                if (pngFiles.Count == 0)
                 {
-                    throw new FileNotFoundException(message: $".svg file not exist");
+                    throw new FileNotFoundException(message: $"No PNG files generated in {pngOutputDir}");
                 }
 
-                this.messenger.Send($"SVG created successfully: {outputDirectory}", "MusicXmlLoadResult");
-                this.SvgPath = svgFilePath.Replace("\\", "/");
+                this.GeneratedPngPaths.AddRange(pngFiles);
+
+                
+                this.messenger.Send($"PNG(s) created successfully: {pngOutputDir} ({pngFiles.Count} files)", "MusicXmlLoadResult");
             }
             catch (Exception ex)
             {

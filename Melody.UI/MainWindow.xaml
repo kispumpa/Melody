@@ -3,16 +3,13 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Melody.UI" 
-        xmlns:svgc="http://sharpvectors.codeplex.com/svgc/"
+        xmlns:local="clr-namespace:Melody.UI"
         mc:Ignorable="d"
         Title="Melody" WindowState="Maximized" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" d:DesignHeight="540" d:DesignWidth="960">
     <Window.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
     </Window.Resources>
     <Grid>
-        
-
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="11*"/>
@@ -21,53 +18,42 @@
 
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
             <Button Content="Load Sheet music" Command="{Binding LoadSheetCommand}" Margin="0,0,10,0" Padding="10,5"/>
-            <!--<Button Content="Load Piano roll" Command="{Binding LoadPianorollCommand}" Margin="0,0,10,0" Padding="10,5"
-                    Visibility="{Binding IsPianoRollView, Converter={StaticResource BoolToVisibilityConverter}}"/>-->
             <ComboBox ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" 
                       Width="200" Margin="0,0,10,0" VerticalContentAlignment="Center"/>
             <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5" Margin="0,0,10,0"/>
             <TextBlock Text="{Binding ViewText}" FontSize="18" FontWeight="Bold" Padding="10,5" VerticalAlignment="Center"/>
         </StackPanel>
 
-        
+        <!-- Piano Roll Nézet -->
         <Grid x:Name="pianorollGrid" Grid.Row="1" Visibility="{Binding IsPianoRollView, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="10*"/>
                 <RowDefinition Height="2*"/>
-            </Grid.RowDefinitions>  
-           
+            </Grid.RowDefinitions>
         </Grid>
-        
-        
-        <!--<Border Grid.Row="2" BorderThickness="1" BorderBrush="Black"
-                Visibility="{Binding IsSvgLoaded, Converter={StaticResource BoolToVisibilityConverter}}">
-
-        </Border>-->
 
         <!-- Kotta Nézet -->
         <Grid x:Name="sheetMusicGrid" Grid.Row="1" ClipToBounds="True"
-      Visibility="{Binding IsSheetMusicView, Converter={StaticResource BoolToVisibilityConverter}}">
+      Visibility="{Binding IsSheetMusicView, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,-21140,0">
 
-            <Grid x:Name="slidingScoreContainer" VerticalAlignment="Center">
-                <Grid.RenderTransform>
-                    <TranslateTransform x:Name="scoreTransform" X="0" Y="0"/>
-                </Grid.RenderTransform>
-
-                <svgc:SvgViewbox x:Name="svgViewbox" Stretch="UniformToFill"/>
-            </Grid>
-
+            <Image x:Name="ImageControl"
+   Stretch="None" HorizontalAlignment="Left">
+                <Image.RenderTransform>
+                    <TranslateTransform x:Name="ImageTransform"/>
+                </Image.RenderTransform>
+            </Image>
             <Canvas x:Name="highlightCanvas" Background="Transparent" IsHitTestVisible="False">
                 <Line x:Name="myPlaybackCursor" Stroke="Red" StrokeThickness="3" 
               X1="100" Y1="0" X2="100" Y2="1000" Visibility="Hidden"/>
             </Canvas>
-
         </Grid>
+
         <!-- Vezérlők -->
-            <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
-                <Button x:Name="playButton" Content="▶ Play" Padding="15,5" Margin="5" Click="PlayButton_Click"/>
-                <Button x:Name="pauseButton" Content="⏸ Pause" Padding="15,5" Margin="5" Click="PauseButton_Click" IsEnabled="False"/>
-                <Button x:Name="stopButton" Content="⏹ Stop" Padding="15,5" Margin="5" Click="StopButton_Click" IsEnabled="False"/>
-                <TextBlock x:Name="timeDisplay" Text="00:00 / 00:00" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14"/>
-            </StackPanel>
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+            <Button x:Name="playButton" Content="▶ Play" Padding="15,5" Margin="5" Click="PlayButton_Click"/>
+            <Button x:Name="pauseButton" Content="⏸ Pause" Padding="15,5" Margin="5" Click="PauseButton_Click" IsEnabled="False"/>
+            <Button x:Name="stopButton" Content="⏹ Stop" Padding="15,5" Margin="5" Click="StopButton_Click" IsEnabled="False"/>
+            <TextBlock x:Name="timeDisplay" Text="00:00 / 00:00" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14"/>
+        </StackPanel>
     </Grid>
 </Window>
