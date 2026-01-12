@@ -252,6 +252,7 @@ namespace Melody.UI
                 ImageControl.Source = new BitmapImage(new Uri(viewModel.ImagePaths[0]));
 
                 CalculateTotalDuration();
+                ImageTransform.X = 300;
                 isSheetMusicInitialized = true;
 
                 Debug.WriteLine($"Sheet music initialized! {viewModel.ImagePaths.Count} PNG(s) loaded");
@@ -351,7 +352,7 @@ namespace Melody.UI
                 UpdatePianoRollFrame();
             }
 
-            ImageTransform.X = 50;
+            ImageTransform.X = 300;
 
             Debug.WriteLine("Playback stopped");
         }

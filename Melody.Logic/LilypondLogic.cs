@@ -75,14 +75,21 @@ namespace Melody.Logic
                     updatedContent = "\\paper {" + Environment.NewLine + newRule + "}" + Environment.NewLine + originalContent;
                 }
 
+                if (originalContent.Contains("\\score {"))
+                {
+                    updatedContent = updatedContent.Replace("\\score {", "\\score {" + Environment.NewLine + "    \\unfoldRepeats {");
+
+                    updatedContent = updatedContent.Replace("\\layout {", "    }" + Environment.NewLine + "    \\layout {");
+                }
+
+                updatedContent = updatedContent.Replace("\\context { \\Score", "\\context { \\Score" + Environment.NewLine + "        proportionalNotationDuration = #(ly:make-moment 1/32)"); ///TODO: fixme
+
                 File.WriteAllText(lyFilePath, updatedContent);
 
                 this.messenger.Send("Converting LilyPond to PNG...", "MusicXmlLoadResult");
 
-                // PNG generálás 300 DPI felbontással (jobb minőség)
                 RunProcess(config.LilypondConfig.LilypondPath, $"--png -dresolution=300 --output={pngOutputDir}/{fileName} {lyFilePath}");
 
-                // Összegyűjtjük az összes generált PNG-t
                 var pngFiles = Directory.GetFiles(pngOutputDir, "*.png")
                     .OrderBy(f => f)
                     .ToList();
