@@ -246,8 +246,8 @@ namespace Melody.UI
                     return;
                 }
 
-                // Playback kurzor beállítása
                 myPlaybackCursor.Y2 = this.sheetMusicGrid.ActualHeight;
+                myPlaybackCursor.Visibility = Visibility.Visible;
 
                 ImageControl.Source = new BitmapImage(new Uri(viewModel.ImagePaths[0]));
 

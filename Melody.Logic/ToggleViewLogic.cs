@@ -11,7 +11,7 @@ namespace Melody.Logic
 
         public ToggleViewLogic(IMessenger messenger)
         {
-            this.IsPianoRollView = true;
+            this.IsPianoRollView = false;
             this.messenger = messenger;
         }
 
