@@ -27,6 +27,7 @@ namespace Melody.UI
         private Dictionary<Note, Rectangle> noteRectangles;
         private bool isPianoRollInitialized = false;
         private bool isPianoRollPlaying = false;
+        private bool isPaused = false;
         private DateTime pianoRollStartTime;
         private double canvasHeight;
 
@@ -34,6 +35,7 @@ namespace Melody.UI
         private bool isSheetMusicInitialized = false;
         private bool isSheetMusicPlaying = false;
         private DateTime sheetMusicStartTime;
+        private DateTime pauseTiem;
         private double totalDuration = 0;
         private double totalSvgWidth = 0;
 
@@ -289,43 +291,36 @@ namespace Melody.UI
             pauseButton.IsEnabled = true;
             stopButton.IsEnabled = true;
 
-            if (viewModel.IsPianoRollView)
+            if (isPaused)
             {
-                if (isPianoRollInitialized)
-                {
-                    pianoRollStartTime = DateTime.Now;
-
-                    foreach (var note in viewModel.PianorollLogic.LoadedNotes)
-                    {
-                        note.Played = false;
-                    }
-
-                    isPianoRollPlaying = true;
-                }
+                pianoRollStartTime = pianoRollStartTime.Add(DateTime.Now - pauseTiem);
+                isPaused = false;
             }
             else
             {
+                pianoRollStartTime = DateTime.Now;
                 sheetMusicStartTime = DateTime.Now;
-                isSheetMusicPlaying = true;
-                myPlaybackCursor.Visibility = Visibility.Visible;
-
-                var logic = viewModel.PianorollLogic;
-                if (logic?.LoadedNotes != null)
-                {
-                    logic.StoreNotes(this.ActualWidth);
-                    foreach (var note in logic.LoadedNotes) { note.Played = false; }
-                }
             }
 
-            timer.Start();
+            isPianoRollPlaying = true;
+            isSheetMusicPlaying = true;
+
+            myPlaybackCursor.Visibility = Visibility.Visible;
+
+            //timer.Start();
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
             isSheetMusicPlaying = false;
-            playButton.IsEnabled = true;
             isPianoRollPlaying = false;
+
+            playButton.IsEnabled = true;
             pauseButton.IsEnabled = false;
+            stopButton.IsEnabled = true;
+
+            isPaused = true;
+            pauseTiem = DateTime.Now;
 
             Debug.WriteLine("Playback paused");
         }
@@ -340,7 +335,6 @@ namespace Melody.UI
             stopButton.IsEnabled = false;
 
             UpdateTimeDisplay(0);
-
 
             var logic = viewModel.PianorollLogic;
             if (logic?.LoadedNotes != null)
@@ -357,27 +351,25 @@ namespace Melody.UI
                 UpdatePianoRollFrame();
             }
 
+            ImageTransform.X = 50;
+
             Debug.WriteLine("Playback stopped");
         }
 
         // ==================== UPDATE LOOP ====================
         private void UpdateFrame(object sender, EventArgs e)
         {
-            if (isPianoRollInitialized && isPianoRollPlaying && pianoRollCanvas != null)
+            if (isPianoRollInitialized && isPianoRollPlaying && pianoRollCanvas != null && isSheetMusicInitialized && isSheetMusicPlaying)
             {
                 UpdatePianoRollFrame();
-            }
-
-            if (isSheetMusicInitialized && isSheetMusicPlaying)
-            {
                 UpdateSheetMusicFrame();
+                UpdateTimeDisplay((DateTime.Now - pianoRollStartTime).TotalSeconds * PlaybackSpeed);
             }
         }
 
         private void UpdatePianoRollFrame()
         {
             double elapsed = (DateTime.Now - pianoRollStartTime).TotalSeconds * PlaybackSpeed;
-            UpdateTimeDisplay(elapsed);
 
             foreach (var kvp in this.noteRectangles)
             {
@@ -412,34 +404,9 @@ namespace Melody.UI
 
         private void UpdateSheetMusicFrame()
         {
+            Debug.WriteLine($"Updating sheet music frame: {ImageTransform.X}");
             ImageTransform.X -= speed;
-            double elapsed = (DateTime.Now - sheetMusicStartTime).TotalSeconds * PlaybackSpeed;
 
-            double currentPixelPos = (elapsed / totalDuration) * totalSvgWidth;
-
-            double cursorFixedPosition = myPlaybackCursor.X1;
-
-            var logic = viewModel.PianorollLogic;
-            if (logic?.LoadedNotes != null)
-            {
-                foreach (var note in logic.LoadedNotes)
-                {
-                    double noteTime = note.Y.Position / PixelsPerSecond;
-
-                    if (!note.Played && elapsed >= noteTime)
-                    {
-                        PlayNote(note.Pitch, (int)note.Y.Length);
-                        note.Played = true;
-                    }
-                }
-            }
-
-            UpdateTimeDisplay(elapsed);
-
-            if (elapsed >= totalDuration)
-            {
-                StopButton_Click(null, null);
-            }
         }
 
         private void UpdateTimeDisplay(double currentTime)

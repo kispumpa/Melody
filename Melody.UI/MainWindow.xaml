@@ -39,7 +39,7 @@
 
             <!-- Sheet music -->
             <Image x:Name="ImageControl"
-   Stretch="None" HorizontalAlignment="Left">
+   Stretch="None" HorizontalAlignment="Left"  >
                 <Image.RenderTransform>
                     <TranslateTransform x:Name="ImageTransform"/>
                 </Image.RenderTransform>
