@@ -1,20 +1,20 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Melody.Logic.Interfaces;
-using Melody.Logic.Models;
-using NAudio.Midi;
-using SharpVectors.Converters;
-using System.Diagnostics;
-using System.IO;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Interop;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using System.Windows.Threading;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.UI
 {
+    using System.Diagnostics;
+    using System.Windows;
+    using System.Windows.Controls;
+    using System.Windows.Interop;
+    using System.Windows.Media;
+    using System.Windows.Media.Imaging;
+    using System.Windows.Shapes;
+    using System.Windows.Threading;
+    using CommunityToolkit.Mvvm.DependencyInjection;
+    using Melody.Logic.Interfaces;
+    using Melody.Logic.Models;
+    using NAudio.Midi;
+
     public partial class MainWindow : Window
     {
         // ===== KONSTANSOK =====
@@ -108,7 +108,6 @@ namespace Melody.UI
         }
 
         // ==================== PIANO ROLL IMPLEMENTATION ====================
-
         private void InitializePianoRoll()
         {
             if (isPianoRollInitialized)
@@ -235,7 +234,6 @@ namespace Melody.UI
         }
 
         // ==================== SHEET MUSIC IMPLEMENTATION ====================
-
         private void InitializeSheetMusic()
         {
             try
@@ -262,18 +260,7 @@ namespace Melody.UI
             }
         }
 
-        // 2. Ez a függvény hívódik meg minden egyes alkalommal, amikor a kotta szélessége változik
-        private void OnScoreSizeChanged(object sender, SizeChangedEventArgs e)
-        {
-            // Itt frissítjük a globális változót a TÉNYLEGES szélességre
-            totalSvgWidth = e.NewSize.Width;
-
-            Debug.WriteLine($"Kotta szélesség frissítve: {totalSvgWidth} px");
-
-            // Opcionális: Ha a szélesség változott, lehet, hogy újra kell számolni a sebességet is?
-            // CalculateScrollSpeed(); 
-        }
-
+        // ==================== PLAYBACK CONTROLS ====================
         private void CalculateTotalDuration()
         {
             var logic = viewModel.PianorollLogic;
@@ -374,7 +361,6 @@ namespace Melody.UI
         }
 
         // ==================== UPDATE LOOP ====================
-
         private void UpdateFrame(object sender, EventArgs e)
         {
             if (isPianoRollInitialized && isPianoRollPlaying && pianoRollCanvas != null)
@@ -429,22 +415,10 @@ namespace Melody.UI
             ImageTransform.X -= speed;
             double elapsed = (DateTime.Now - sheetMusicStartTime).TotalSeconds * PlaybackSpeed;
 
-            // Szélesség frissítése, ha még nem történt meg
-            //if (totalSvgWidth == 0)
-            //{
-            //    totalSvgWidth = slidingScoreContainer.ActualWidth;
-            //}
-
-            // Jelenlegi pozíció számítása pixelben
             double currentPixelPos = (elapsed / totalDuration) * totalSvgWidth;
 
-            // Kurzor fix pozíciója
             double cursorFixedPosition = myPlaybackCursor.X1;
 
-            // Kotta mozgatása (a kotta "befolyik" a kurzor alá)
-            //scoreTransform.X = cursorFixedPosition - currentPixelPos;
-
-            // Hangjegyek lejátszása
             var logic = viewModel.PianorollLogic;
             if (logic?.LoadedNotes != null)
             {
@@ -477,7 +451,6 @@ namespace Melody.UI
         }
 
         // ==================== MIDI PLAYBACK ====================
-
         private void PlayNote(string pitch, int durationPixels)
         {
             if (this.midiOut == null)
@@ -512,7 +485,6 @@ namespace Melody.UI
         }
 
         // ==================== CLEANUP ====================
-
         private void MainWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
             CompositionTarget.Rendering -= UpdateFrame;

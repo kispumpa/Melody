@@ -16,6 +16,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
+        <!-- Upper Control Panel -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
             <Button Content="Load Sheet music" Command="{Binding LoadSheetCommand}" Margin="0,0,10,0" Padding="10,5"/>
             <ComboBox ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" 
@@ -24,7 +25,7 @@
             <TextBlock Text="{Binding ViewText}" FontSize="18" FontWeight="Bold" Padding="10,5" VerticalAlignment="Center"/>
         </StackPanel>
 
-        <!-- Piano Roll Nézet -->
+        <!-- Piano Roll View -->
         <Grid x:Name="pianorollGrid" Grid.Row="1" Visibility="{Binding IsPianoRollView, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid.RowDefinitions>
                 <RowDefinition Height="10*"/>
@@ -32,23 +33,25 @@
             </Grid.RowDefinitions>
         </Grid>
 
-        <!-- Kotta Nézet -->
+        <!-- Sheet Music View -->
         <Grid x:Name="sheetMusicGrid" Grid.Row="1" ClipToBounds="True"
       Visibility="{Binding IsSheetMusicView, Converter={StaticResource BoolToVisibilityConverter}}" Margin="0,0,-21140,0">
 
+            <!-- Sheet music -->
             <Image x:Name="ImageControl"
    Stretch="None" HorizontalAlignment="Left">
                 <Image.RenderTransform>
                     <TranslateTransform x:Name="ImageTransform"/>
                 </Image.RenderTransform>
             </Image>
+            <!-- Play cursor -->
             <Canvas x:Name="highlightCanvas" Background="Transparent" IsHitTestVisible="False">
                 <Line x:Name="myPlaybackCursor" Stroke="Red" StrokeThickness="3" 
               X1="100" Y1="0" X2="100" Y2="1000" Visibility="Hidden"/>
             </Canvas>
         </Grid>
 
-        <!-- Vezérlők -->
+        <!-- Playing Controls -->
         <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
             <Button x:Name="playButton" Content="▶ Play" Padding="15,5" Margin="5" Click="PlayButton_Click"/>
             <Button x:Name="pauseButton" Content="⏸ Pause" Padding="15,5" Margin="5" Click="PauseButton_Click" IsEnabled="False"/>

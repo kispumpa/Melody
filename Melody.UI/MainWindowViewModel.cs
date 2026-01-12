@@ -19,12 +19,6 @@ public class MainWindowViewModel : ObservableRecipient
         Title = "Select a MusicXML file",
     };
 
-    private readonly Microsoft.Win32.OpenFileDialog openFileDialogPianoroll = new Microsoft.Win32.OpenFileDialog
-    {
-        Filter = "Extracted MusicXML files (*.xml)|*.xml|All files (*.*)|*.*",
-        Title = "Select an extracted MusicXML file",
-    };
-
     private IToggleViewLogic toggleLogic;
     private ILilypondLogic lilypondLogic;
     private IPianorollLogic pianorollLogic;
@@ -80,27 +74,6 @@ public class MainWindowViewModel : ObservableRecipient
 
         this.ToggleViewCommand = new RelayCommand(() => this.toggleLogic.ToggleView());
 
-        this.LoadLilypondCommand = new RelayCommand(() =>
-        {
-            if (this.openFileDialog.ShowDialog() == true)
-            {
-                string filePath = this.openFileDialog.FileName;
-                this.lilypondLogic.LoadLilypond(filePath);
-                this.UpdateImagePaths();
-                this.IsImageLoaded = true;
-            }
-        });
-
-        this.LoadPianorollCommand = new RelayCommand(() =>
-        {
-            if (this.openFileDialogPianoroll.ShowDialog() == true)
-            {
-                string filePath = this.openFileDialogPianoroll.FileName;
-                this.pianorollLogic.InitializePianoRoll(filePath);
-                this.IsPianorollLoaded = true;
-            }
-        });
-
         this.LoadSheetCommand = new RelayCommand(() =>
         {
             if (this.openFileDialog.ShowDialog() == true)
@@ -126,10 +99,6 @@ public class MainWindowViewModel : ObservableRecipient
 
     // Commands
     public ICommand ToggleViewCommand { get; set; }
-
-    public ICommand LoadLilypondCommand { get; set; }
-
-    public ICommand LoadPianorollCommand { get; set; }
 
     public ICommand LoadSheetCommand { get; set; }
 
