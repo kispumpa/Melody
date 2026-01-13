@@ -16,24 +16,21 @@ namespace Melody.UI.ViewModels
 
         public ICommand PlayerCommand { get; set; }
 
+        public ICommand SettingsCommand { get; }
+
         public ICommand ExitCommand { get; }
-
-        public event Action RequestOpenMain;
-
 
         public MenuWindowViewModel()
         {
             StartPracticeCommand = new RelayCommand(OnStartPractice);
             PlayerCommand = new RelayCommand(OnPlayer);
+            SettingsCommand = new RelayCommand(OnSettings);
             ExitCommand = new RelayCommand(OnExit);
-
-
-
         }
 
         private void OnStartPractice()
         {
-            
+
         }
 
         private void OnSettings()
