@@ -11,150 +11,153 @@ using CommunityToolkit.Mvvm.Input;
 using Melody.Logic.Interfaces;
 using NAudio.Midi;
 
-public class MainWindowViewModel : ObservableRecipient
+namespace Melody.UI
 {
-    private readonly Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
+    public class MainWindowViewModel : ObservableRecipient
     {
-        Filter = "MusicXML files (*.mxl)|*.mxl|All files (*.*)|*.*",
-        Title = "Select a MusicXML file",
-    };
-
-    private IToggleViewLogic toggleLogic;
-    private ILilypondLogic lilypondLogic;
-    private IPianorollLogic pianorollLogic;
-    private IMxlUnpacker mxlUnpacker;
-    private ObservableCollection<string> imagePaths;
-    private bool isPianorollLoaded;
-    private bool isImageLoaded;
-    private ObservableCollection<string> midiDevices;
-    private int selectedMidiDeviceIndex;
-
-    public MainWindowViewModel()
-        : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>(), Ioc.Default.GetService<IPianorollLogic>(), Ioc.Default.GetService<IMxlUnpacker>())
-    {
-    }
-
-    public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic, IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker)
-    {
-        this.IsActive = true;
-
-        this.toggleLogic = toggleLogic;
-        this.lilypondLogic = lilypondLogic;
-        this.pianorollLogic = pianorollLogic;
-        this.mxlUnpacker = mxlUnpacker;
-        this.isPianorollLoaded = false;
-        this.isImageLoaded = false;
-
-        this.imagePaths = new ObservableCollection<string>();
-        this.InitializeMidiDevices();
-
-        this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
+        private readonly Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
         {
-            this.OnPropertyChanged(nameof(this.IsPianoRollView));
-            this.OnPropertyChanged(nameof(this.IsSheetMusicView));
-            this.OnPropertyChanged(nameof(this.ViewText));
-            Debug.WriteLine(msg);
-        });
+            Filter = "MusicXML files (*.mxl)|*.mxl|All files (*.*)|*.*",
+            Title = "Select a MusicXML file",
+        };
 
-        this.Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
+        private IToggleViewLogic toggleLogic;
+        private ILilypondLogic lilypondLogic;
+        private IPianorollLogic pianorollLogic;
+        private IMxlUnpacker mxlUnpacker;
+        private ObservableCollection<string> imagePaths;
+        private bool isPianorollLoaded;
+        private bool isImageLoaded;
+        private ObservableCollection<string> midiDevices;
+        private int selectedMidiDeviceIndex;
+
+        public MainWindowViewModel()
+            : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>(), Ioc.Default.GetService<IPianorollLogic>(), Ioc.Default.GetService<IMxlUnpacker>())
         {
-            if (msg.Contains("successfully"))
-            {
-                isImageLoaded = true;
-                this.UpdateImagePaths();
-            }
-            this.OnPropertyChanged(nameof(this.IsImageLoaded));
-            Debug.WriteLine(msg);
-        });
-
-        this.Messenger.Register<MainWindowViewModel, string, string>(this, "PianorollLoadResult", (recipient, msg) =>
-        {
-            Debug.WriteLine(msg);
-        });
-
-        this.ToggleViewCommand = new RelayCommand(() => this.toggleLogic.ToggleView());
-
-        this.LoadSheetCommand = new RelayCommand(() =>
-        {
-            if (this.openFileDialog.ShowDialog() == true)
-            {
-                string filePath = this.openFileDialog.FileName;
-                this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
-                this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
-                this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
-                this.IsPianorollLoaded = true;
-                this.IsImageLoaded = true;
-            }
-        });
-    }
-
-    public static bool IsInDesignMode
-    {
-        get
-        {
-            var prop = DesignerProperties.IsInDesignModeProperty;
-            return (bool)DependencyPropertyDescriptor.FromProperty(prop, typeof(FrameworkElement)).Metadata.DefaultValue;
-        }
-    }
-
-    // Commands
-    public ICommand ToggleViewCommand { get; set; }
-
-    public ICommand LoadSheetCommand { get; set; }
-
-    // Logic
-    public IPianorollLogic PianorollLogic => this.pianorollLogic;
-
-    // Properties
-    public bool IsPianoRollView => this.toggleLogic.IsPianoRollView;
-
-    public bool IsSheetMusicView => !this.toggleLogic.IsPianoRollView;
-
-    public bool IsImageLoaded
-    {
-        get => this.isImageLoaded;
-        set => this.SetProperty(ref this.isImageLoaded, value);
-    }
-
-    public string ViewText => this.toggleLogic.IsPianoRollView ? "Piano roll" : "Sheet music";
-
-    public ObservableCollection<string> ImagePaths
-    {
-        get => this.imagePaths;
-        set => this.SetProperty(ref this.imagePaths, value);
-    }
-
-    public bool IsPianorollLoaded
-    {
-        get => this.isPianorollLoaded;
-        set => this.SetProperty(ref this.isPianorollLoaded, value);
-    }
-
-    public ObservableCollection<string> MidiDevices => this.midiDevices;
-
-    public int SelectedMidiDeviceIndex
-    {
-        get => this.selectedMidiDeviceIndex;
-        set => this.SetProperty(ref this.selectedMidiDeviceIndex, value);
-    }
-
-    private void InitializeMidiDevices()
-    {
-        this.midiDevices = new ObservableCollection<string>();
-        for (int i = 0; i < MidiOut.NumberOfDevices; i++)
-        {
-            this.midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
         }
 
-        this.selectedMidiDeviceIndex = this.midiDevices.Count > 0 ? 0 : -1;
-    }
-
-    private void UpdateImagePaths()
-    {
-        this.imagePaths.Clear();
-        foreach (var path in this.lilypondLogic.GeneratedPngPaths)
+        public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic, IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker)
         {
-            this.imagePaths.Add(path);
+            this.IsActive = true;
+
+            this.toggleLogic = toggleLogic;
+            this.lilypondLogic = lilypondLogic;
+            this.pianorollLogic = pianorollLogic;
+            this.mxlUnpacker = mxlUnpacker;
+            this.isPianorollLoaded = false;
+            this.isImageLoaded = false;
+
+            this.imagePaths = new ObservableCollection<string>();
+            this.InitializeMidiDevices();
+
+            this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
+            {
+                this.OnPropertyChanged(nameof(this.IsPianoRollView));
+                this.OnPropertyChanged(nameof(this.IsSheetMusicView));
+                this.OnPropertyChanged(nameof(this.ViewText));
+                Debug.WriteLine(msg);
+            });
+
+            this.Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
+            {
+                if (msg.Contains("successfully"))
+                {
+                    isImageLoaded = true;
+                    this.UpdateImagePaths();
+                }
+                this.OnPropertyChanged(nameof(this.IsImageLoaded));
+                Debug.WriteLine(msg);
+            });
+
+            this.Messenger.Register<MainWindowViewModel, string, string>(this, "PianorollLoadResult", (recipient, msg) =>
+            {
+                Debug.WriteLine(msg);
+            });
+
+            this.ToggleViewCommand = new RelayCommand(() => this.toggleLogic.ToggleView());
+
+            this.LoadSheetCommand = new RelayCommand(() =>
+            {
+                if (this.openFileDialog.ShowDialog() == true)
+                {
+                    string filePath = this.openFileDialog.FileName;
+                    this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
+                    this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
+                    this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
+                    this.IsPianorollLoaded = true;
+                    this.IsImageLoaded = true;
+                }
+            });
+        }
+
+        public static bool IsInDesignMode
+        {
+            get
+            {
+                var prop = DesignerProperties.IsInDesignModeProperty;
+                return (bool)DependencyPropertyDescriptor.FromProperty(prop, typeof(FrameworkElement)).Metadata.DefaultValue;
+            }
+        }
+
+        // Commands
+        public ICommand ToggleViewCommand { get; set; }
+
+        public ICommand LoadSheetCommand { get; set; }
+
+        // Logic
+        public IPianorollLogic PianorollLogic => this.pianorollLogic;
+
+        // Properties
+        public bool IsPianoRollView => this.toggleLogic.IsPianoRollView;
+
+        public bool IsSheetMusicView => !this.toggleLogic.IsPianoRollView;
+
+        public bool IsImageLoaded
+        {
+            get => this.isImageLoaded;
+            set => this.SetProperty(ref this.isImageLoaded, value);
+        }
+
+        public string ViewText => this.toggleLogic.IsPianoRollView ? "Piano roll" : "Sheet music";
+
+        public ObservableCollection<string> ImagePaths
+        {
+            get => this.imagePaths;
+            set => this.SetProperty(ref this.imagePaths, value);
+        }
+
+        public bool IsPianorollLoaded
+        {
+            get => this.isPianorollLoaded;
+            set => this.SetProperty(ref this.isPianorollLoaded, value);
+        }
+
+        public ObservableCollection<string> MidiDevices => this.midiDevices;
+
+        public int SelectedMidiDeviceIndex
+        {
+            get => this.selectedMidiDeviceIndex;
+            set => this.SetProperty(ref this.selectedMidiDeviceIndex, value);
+        }
+
+        private void InitializeMidiDevices()
+        {
+            this.midiDevices = new ObservableCollection<string>();
+            for (int i = 0; i < MidiOut.NumberOfDevices; i++)
+            {
+                this.midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
+            }
+
+            this.selectedMidiDeviceIndex = this.midiDevices.Count > 0 ? 0 : -1;
+        }
+
+        private void UpdateImagePaths()
+        {
+            this.imagePaths.Clear();
+            foreach (var path in this.lilypondLogic.GeneratedPngPaths)
+            {
+                this.imagePaths.Add(path);
+            }
         }
     }
 }
