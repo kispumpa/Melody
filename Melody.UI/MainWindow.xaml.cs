@@ -13,6 +13,7 @@ namespace Melody.UI
     using CommunityToolkit.Mvvm.DependencyInjection;
     using Melody.Logic.Interfaces;
     using Melody.Logic.Models;
+    using Melody.UI.ViewModels;
     using NAudio.Midi;
 
     public partial class MainWindow : Window

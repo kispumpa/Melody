@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Melody.UI.ViewModels;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;

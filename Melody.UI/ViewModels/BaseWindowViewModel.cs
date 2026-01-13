@@ -8,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace Melody.UI
+namespace Melody.UI.ViewModels
 {
     public class BaseWindowViewModel : INotifyPropertyChanged
     {
