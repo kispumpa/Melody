@@ -1,5 +1,4 @@
 ﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Melody.Logic;
 using Melody.Logic.Interfaces;
 using Melody.UI.ViewModels;
 using System;

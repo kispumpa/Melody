@@ -1,4 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.Messaging;
+using Melody.Logic.Interfaces;
 using Melody.Logic.Models;
 using System;
 using System.Collections.Generic;

@@ -1,6 +1,6 @@
 ﻿using Melody.Logic.Models;
 
-namespace Melody.Logic
+namespace Melody.Logic.Interfaces
 {
     public interface IPracticeLogic
     {
