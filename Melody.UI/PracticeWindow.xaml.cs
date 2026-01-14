@@ -137,8 +137,52 @@ namespace Melody.UI
                             }
 
                             break;
+
                         case JsonValueKind.String:
+                            string measureString = element.GetString();
+                            int measureMax = int.Parse(measureString.Substring(1));
+                            int phaseA = logic.Structure.Combos[currentMeasureIndex].Phase;
+
+                            switch (phaseA)
+                            {
+                                case 0:
+                                    SetChange("r", 0);
+                                    for (int i = 0; i <= measureMax; i++)
+                                    {
+                                        LoadMeasure("r", i);
+                                    }
+
+                                    break;
+
+                                case 1:
+                                    SetChange("l", 0);
+                                    for (int i = 0; i <= measureMax; i++)
+                                    {
+                                        LoadMeasure("l", i);
+                                    }
+
+                                    break;
+
+                                case 2:
+                                    SetChange("r", 0);
+                                    for (int i = 0; i <= measureMax; i++)
+                                    {
+                                        LoadMeasure("r", i);
+                                    }
+
+                                    SetChange("l", 0);
+                                    for (int i = 0; i <= measureMax; i++)
+                                    {
+                                        LoadMeasure("l", i);
+                                    }
+
+                                    break;
+
+                                default:
+                                    break;
+                            }
                             break;
+
                         default:
                             break;
                     }
@@ -180,6 +224,10 @@ namespace Melody.UI
         {
             string id = $"{side}{measureNumber}";
             Measure measure = viewModel.PracticeLogic.MeasureList.Measures.FirstOrDefault(m => m.ID == id);
+            if (measure.NoteNumbers.Count == 0)
+            {
+
+            }
             var number = measure.NoteNumbers[0];
             var note = viewModel.PracticeLogic.PracticeNotes[measureNumber][number];
             change = note.Y.Position - 300;
