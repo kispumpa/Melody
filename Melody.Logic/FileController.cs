@@ -48,6 +48,15 @@ namespace Melody.Logic
             return folderPath;
         }
 
+        public static SheetCollection GetCollection()
+        {
+            string sheetCollectionJson = File.ReadAllText(GetCollectionPath());
+
+            SheetCollection collection = JsonSerializer.Deserialize<SheetCollection>(sheetCollectionJson);
+
+            return collection;
+        }
+
         public static void Save(string data, string name)
         {
             string appDataPath = GetAppDataPath();

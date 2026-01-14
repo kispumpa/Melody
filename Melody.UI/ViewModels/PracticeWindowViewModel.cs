@@ -1,11 +1,14 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.DependencyInjection;
 using CommunityToolkit.Mvvm.Input;
+using Melody.Logic;
 using Melody.Logic.Interfaces;
+using Melody.Logic.Models;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Input;
 
@@ -59,7 +62,20 @@ namespace Melody.UI.ViewModels
                     this.mxlUnpacker.ExtractAndSave(filePath, $"{FileName}_musicxml.xml");
                     this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
                     IsPianorollLoaded = true;
-                    
+                }
+            });
+
+            LoadSheetCommand = new RelayCommand(() =>
+            {
+                SheetCollection collection = FileController.GetCollection();
+                SelectWindow selectWindow = new SelectWindow(collection.Sheets);
+                string key = string.Empty;
+
+                if ((bool)selectWindow.ShowDialog())
+                {
+                    key = selectWindow.SelectedKey;
+
+
                 }
             });
         }

@@ -9,5 +9,6 @@
     <Grid>
         <TextBox HorizontalAlignment="Left" Margin="400,180,0,0" TextWrapping="Wrap" Text="Practice window" VerticalAlignment="Top" Width="120"/>
         <Button Content="Create Practice" HorizontalAlignment="Left" Command="{Binding CreateSheetCommand}" Margin="338,296,0,0" VerticalAlignment="Top"/>
+        <Button Content="Load Practice" HorizontalAlignment="Left" Command="{Binding LoadSheetCommand}" Margin="338,397,0,0" VerticalAlignment="Top"/>
     </Grid>
 </Window>

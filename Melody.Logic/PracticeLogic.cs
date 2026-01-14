@@ -96,6 +96,7 @@ namespace Melody.Logic
 
             string progressData = JsonSerializer.Serialize(progress, options);
 
+            //ID_notes.json
             string notes = JsonSerializer.Serialize(practiceNotes, options);
 
             StorePractice(fileName, measureListData, structureData, progressData, notes);
@@ -136,9 +137,7 @@ namespace Melody.Logic
                     WriteIndented = true,
                 };
 
-                string sheetCollectionJson = File.ReadAllText(FileController.GetCollectionPath());
-
-                SheetCollection collection = JsonSerializer.Deserialize<SheetCollection>(sheetCollectionJson);
+                SheetCollection collection = FileController.GetCollection();
 
                 string id = GenerateUniqueKey(collection.Sheets);
                 collection.Sheets.Add(id, name);
@@ -160,7 +159,7 @@ namespace Melody.Logic
 
         }
 
-        string GenerateUniqueKey(Dictionary<string, string> existingDict)
+        private string GenerateUniqueKey(Dictionary<string, string> existingDict)
         {
             string id;
             do
