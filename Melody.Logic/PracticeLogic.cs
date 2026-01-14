@@ -14,21 +14,31 @@ namespace Melody.Logic
     public class PracticeLogic : IPracticeLogic
     {
         private IMessenger messenger;
-        private PracticeStructure structure;
         private Dictionary<double, List<Models.Note>> practiceNotes;
+        private PracticeStructure structure;
+        private MeasureList measureList;
+        private Progress progress;
+        private string key;
+
+        public string Key => key;
+
+        public Dictionary<double, List<Note>> PracticeNotes { get => practiceNotes; set => practiceNotes = value; }
+        public PracticeStructure Structure { get => structure; set => structure = value; }
+        public MeasureList MeasureList { get => measureList; set => measureList = value; }
+        public Progress Progress { get => progress; set => progress = value; }
 
         public PracticeLogic(IMessenger messenger)
         {
             this.messenger = messenger;
-            structure = new PracticeStructure()
+            Structure = new PracticeStructure()
             {
                 Combos = new List<Combo>()
             };
         }
 
-        public void CreatePractice(Dictionary<double, List<Models.Note>> practiceNotes, string fileName)
+        public void CreatePractice(Dictionary<double, List<Models.Note>> practiceNotes, string fileName, int totalVisibleNotes, int minOctave)
         {
-            this.practiceNotes = practiceNotes;
+            this.PracticeNotes = practiceNotes;
 
             // ID_measureList.json
             var measureList = new MeasureList
@@ -85,13 +95,15 @@ namespace Melody.Logic
             LoadIntoStructure(1);
             LoadIntoStructure(2);
 
-            string structureData = JsonSerializer.Serialize(structure, options);
+            string structureData = JsonSerializer.Serialize(Structure, options);
 
             //ID_progress.json
             var progress = new Progress
             {
                 CurrentCombo = 0,
-                TotalCombo = structure.Combos.Count,
+                TotalCombo = Structure.Combos.Count,
+                TotalVisibleNotes = totalVisibleNotes,
+                MinOctave = minOctave,
             };
 
             string progressData = JsonSerializer.Serialize(progress, options);
@@ -106,9 +118,9 @@ namespace Melody.Logic
         private void LoadIntoStructure(int phase)
         {
             // külön ütemek
-            for (int i = 0; i < practiceNotes.Count; i++)
+            for (int i = 0; i < PracticeNotes.Count; i++)
             {
-                structure.Combos.Add(new Combo
+                Structure.Combos.Add(new Combo
                 {
                     MeasureNumber = i,
                     Phase = phase,
@@ -116,9 +128,9 @@ namespace Melody.Logic
             }
 
             // összefűzött ütemek
-            for (int i = 1; i < practiceNotes.Count; i++)
+            for (int i = 1; i < PracticeNotes.Count; i++)
             {
-                structure.Combos.Add(new Combo
+                Structure.Combos.Add(new Combo
                 {
                     MeasureNumber = $"-{i}",
                     Phase = phase,
@@ -141,6 +153,7 @@ namespace Melody.Logic
 
                 string id = GenerateUniqueKey(collection.Sheets);
                 collection.Sheets.Add(id, name);
+                this.key = id;
 
                 string updatedSheetCollectionJson = JsonSerializer.Serialize(collection, options);
 
@@ -171,9 +184,33 @@ namespace Melody.Logic
             return id;
         }
 
-        public void LoadPractice(string path)
+        public void LoadPractice(string key)
         {
-            // Implementation for loading practice structure from a file goes here.
+            SheetCollection collection = FileController.GetCollection();
+            if (collection.Sheets.ContainsKey(key))
+            {
+                messenger.Send($"Practice with id {key} found, loading into Melody...", "PracticeLogicResult");
+                this.key = key;
+                FileController.Load(this);
+            }
+            else
+            {
+                messenger.Send($"Practice with id {key} not found!", "PracticeLogicResult");
+            }
+        }
+
+        public void LoadPractice()
+        {
+            SheetCollection collection = FileController.GetCollection();
+            if (collection.Sheets.ContainsKey(key))
+            {
+                messenger.Send($"Practice with id {key} found, loading into Melody...", "PracticeLogicResult");
+                FileController.Load(this);
+            }
+            else
+            {
+                messenger.Send($"Practice with id {key} not found!", "PracticeLogicResult");
+            }
         }
     }
 }

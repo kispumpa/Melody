@@ -35,9 +35,17 @@ namespace Melody.Logic
 
         public Dictionary<double, List<Models.Note>> PracticeNotes { get; private set; }
 
-        public int TotalVisibleNotes => this.totalVisibleNotes;
+        public int TotalVisibleNotes
+        {
+            get => this.totalVisibleNotes;
+            set => this.totalVisibleNotes = value;
+        }
 
-        public int MinOctave => this.minOctave;
+        public int MinOctave
+        {
+            get => this.minOctave;
+            set => this.minOctave = value;
+        }
 
         public int MaxOctave => this.maxOctave;
 
@@ -74,7 +82,7 @@ namespace Melody.Logic
             double durationSum = 300;
             double divisions = 0;
             double lastDuration = 0; // for chords
-            int measureCount = 0;
+            int measureCount = -1;
             bool isRightHand = true;
 
             foreach (var part in this.score.Parts)

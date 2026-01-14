@@ -12,9 +12,9 @@ namespace Melody.Logic.Interfaces
 
         Dictionary<double, List<Models.Note>> PracticeNotes { get; }
 
-        int TotalVisibleNotes { get; }
+        int TotalVisibleNotes { get; set; }
 
-        int MinOctave { get; }
+        int MinOctave { get; set; }
 
         int MaxOctave { get; }
 

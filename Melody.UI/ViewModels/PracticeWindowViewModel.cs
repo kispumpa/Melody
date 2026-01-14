@@ -25,23 +25,34 @@ namespace Melody.UI.ViewModels
         private IPianorollLogic pianorollLogic;
         private IMxlUnpacker mxlUnpacker;
         private IPracticeLogic practiceLogic;
+        private IToggleViewLogic toggleLogic;
         private bool isPianorollLoaded;
+        private bool isKeySelected;
         private string fileName;
 
         public PracticeWindowViewModel()
             : this(IsInDesignMode ? null : Ioc.Default.GetService<IPianorollLogic>(),
               Ioc.Default.GetService<IMxlUnpacker>(),
-              Ioc.Default.GetService<IPracticeLogic>())
+              Ioc.Default.GetService<IPracticeLogic>(),
+              Ioc.Default.GetService<IToggleViewLogic>())
         {
         }
 
-        public PracticeWindowViewModel(IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker, IPracticeLogic practiceLogic)
+        public PracticeWindowViewModel(IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker, IPracticeLogic practiceLogic, IToggleViewLogic toggleLogic)
         {
             IsActive = true;
             IsPianorollLoaded = false;
             this.pianorollLogic = pianorollLogic;
             this.mxlUnpacker = mxlUnpacker;
             this.practiceLogic = practiceLogic;
+            this.toggleLogic = toggleLogic;
+
+            Messenger.Register<PracticeWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
+            {
+                OnPropertyChanged(nameof(IsPianoRollView));
+                OnPropertyChanged(nameof(IsButtonView));
+                Debug.WriteLine(msg);
+            });
 
             Messenger.Register<PracticeWindowViewModel, string, string>(this, "PianorollLoadResult", (recipient, msg) =>
             {
@@ -74,8 +85,10 @@ namespace Melody.UI.ViewModels
                 if ((bool)selectWindow.ShowDialog())
                 {
                     key = selectWindow.SelectedKey;
-
-
+                    this.practiceLogic.LoadPractice(key);
+                    this.pianorollLogic.TotalVisibleNotes = this.practiceLogic.Progress.TotalVisibleNotes;
+                    this.pianorollLogic.MinOctave = this.practiceLogic.Progress.MinOctave;
+                    AreFilesLoaded = true;
                 }
             });
         }
@@ -84,8 +97,13 @@ namespace Melody.UI.ViewModels
 
         public ICommand LoadSheetCommand { get; set; }
 
+        public bool IsPianoRollView => toggleLogic.IsPianoRollView;
+
+        public bool IsButtonView => !toggleLogic.IsPianoRollView;
+
         public IPianorollLogic PianorollLogic => pianorollLogic;
         public IPracticeLogic PracticeLogic => practiceLogic;
+        public IToggleViewLogic ToggleLogic => toggleLogic;
 
         public string FileName
         {
@@ -96,6 +114,12 @@ namespace Melody.UI.ViewModels
         {
             get => isPianorollLoaded;
             set => SetProperty(ref isPianorollLoaded, value);
+        }
+
+        public bool AreFilesLoaded
+        {
+            get => isKeySelected;
+            set => SetProperty(ref isKeySelected, value);
         }
 
         public static bool IsInDesignMode

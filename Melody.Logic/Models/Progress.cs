@@ -14,5 +14,11 @@ namespace Melody.Logic.Models
 
         [JsonPropertyName("totalCombo")]
         public int TotalCombo { get; set; }
+
+        [JsonPropertyName("totalVisibleNotes")]
+        public int TotalVisibleNotes { get; set; }
+
+        [JsonPropertyName("minOctave")]
+        public int MinOctave { get; set; }
     }
 }

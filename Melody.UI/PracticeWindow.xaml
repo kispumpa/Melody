@@ -6,9 +6,27 @@
         xmlns:local="clr-namespace:Melody.UI"
         mc:Ignorable="d"
         Title="PracticeWindow" WindowState="Maximized" d:DesignHeight="540" d:DesignWidth="960">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
     <Grid>
-        <TextBox HorizontalAlignment="Left" Margin="400,180,0,0" TextWrapping="Wrap" Text="Practice window" VerticalAlignment="Top" Width="120"/>
-        <Button Content="Create Practice" HorizontalAlignment="Left" Command="{Binding CreateSheetCommand}" Margin="338,296,0,0" VerticalAlignment="Top"/>
-        <Button Content="Load Practice" HorizontalAlignment="Left" Command="{Binding LoadSheetCommand}" Margin="338,397,0,0" VerticalAlignment="Top"/>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="1*"/>
+            <RowDefinition Height="11*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" 
+                    Visibility="{Binding IsButtonView, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Button Content="Create Practice" FontSize="20" HorizontalAlignment="Left" Command="{Binding CreateSheetCommand}" Margin="20,0" Height="66" Width="200"/>
+            <Button Content="Load Practice" FontSize="20" HorizontalAlignment="Left" Command="{Binding LoadSheetCommand}" Margin="20,0" Height="66" Width="200"/>
+        </StackPanel>
+
+        <Grid x:Name="pianorollGrid" Grid.Row="1" Visibility="{Binding IsPianoRollView, Converter={StaticResource BoolToVisibilityConverter}}">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="10*"/>   
+                <RowDefinition Height="2*"/>
+            </Grid.RowDefinitions>
+            <TextBlock Text="Piano Roll View" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Grid>
     </Grid>
 </Window>

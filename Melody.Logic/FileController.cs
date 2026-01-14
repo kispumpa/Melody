@@ -67,6 +67,22 @@ namespace Melody.Logic
             Debug.WriteLine($"File saved here: {goalPath}");
         }
 
-        
+        public static void Load(PracticeLogic logic)
+        {
+            var practiceNotesPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_notes.json");
+            var structurePath = Path.Combine(GetAppDataPath(), $"{logic.Key}_structure.json");
+            var measureListPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_measureList.json");
+            var progressPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_progress.json");
+
+            string practiceNotes = File.ReadAllText($"{practiceNotesPath}");
+            string structure = File.ReadAllText($"{structurePath}");
+            string measureList = File.ReadAllText($"{measureListPath}");
+            string progress = File.ReadAllText($"{progressPath}");
+
+            logic.PracticeNotes = JsonSerializer.Deserialize<Dictionary<double, List<Note>>>(practiceNotes);
+            logic.Structure = JsonSerializer.Deserialize<PracticeStructure>(structure);
+            logic.MeasureList = JsonSerializer.Deserialize<MeasureList>(measureList);
+            logic.Progress = JsonSerializer.Deserialize<Progress>(progress);
+        }
     }
 }
