@@ -30,7 +30,8 @@ namespace Melody.UI.ViewModels
 
         private void OnStartPractice()
         {
-
+            var practiceWind = new PracticeWindow();
+            practiceWind.Show();
         }
 
         private void OnSettings()

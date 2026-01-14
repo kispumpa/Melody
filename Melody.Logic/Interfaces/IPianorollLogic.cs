@@ -10,6 +10,8 @@ namespace Melody.Logic.Interfaces
 
         List<Note> LoadedNotes { get; }
 
+        Dictionary<double, List<Models.Note>> PracticeNotes { get; }
+
         int TotalVisibleNotes { get; }
 
         int MinOctave { get; }
@@ -20,8 +22,10 @@ namespace Melody.Logic.Interfaces
 
         void InitializePianoRoll(string path);
 
-        void StoreNotes(double windowWidth);
+        void StoreNotes(double windowWidth, bool isPractice = false);
 
         void UpdateNotePositions(double canvasHeight);
+
+        void CreatePractice();
     }
 }

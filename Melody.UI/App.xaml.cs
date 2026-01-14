@@ -20,6 +20,7 @@
                 .AddSingleton<ILilypondLogic, LilypondLogic>()
                 .AddSingleton<IPianorollLogic, PianorollLogic>()
                 .AddSingleton<IMxlUnpacker, MxlUnpacker>()
+                .AddSingleton<IPracticeLogic, PracticeLogic>()
                 .AddSingleton<IMessenger>(WeakReferenceMessenger.Default)
                 .BuildServiceProvider());
         }

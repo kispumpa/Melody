@@ -2,6 +2,7 @@
 
 namespace Melody.Logic
 {
+    using System.Diagnostics;
     using System.IO.Compression;
     using System.Xml.Linq;
     using Melody.Logic.Interfaces;
@@ -82,7 +83,7 @@ namespace Melody.Logic
 
             ZipFile.ExtractToDirectory(this.MxlPath, destinationPath);
 
-            Console.WriteLine($"MXL fájl kicsomagolva ide: {destinationPath}");
+            Debug.WriteLine($"MXL fájl kicsomagolva ide: {destinationPath}");
         }
 
         /// <summary>Extracts the mxl file with <see cref="ExtractMusicXml(string)"/> and saves it to the given output path.</summary>

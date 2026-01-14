@@ -28,9 +28,12 @@ namespace Melody.Logic
             this.messenger = messenger;
             this.notes = new Dictionary<double, Models.Note>();
             this.LoadedNotes = new List<Models.Note>();
+            this.PracticeNotes = new Dictionary<double, List<Models.Note>>();
         }
 
         public List<Models.Note> LoadedNotes { get; private set; }
+
+        public Dictionary<double, List<Models.Note>> PracticeNotes { get; private set; }
 
         public int TotalVisibleNotes => this.totalVisibleNotes;
 
@@ -60,7 +63,7 @@ namespace Melody.Logic
             }
         }
 
-        public void StoreNotes(double windowWidth)
+        public void StoreNotes(double windowWidth, bool isPractice)
         {
             this.messenger.Send("Storing notes for piano roll...", "PianorollLoadResult");
 
@@ -71,6 +74,8 @@ namespace Melody.Logic
             double durationSum = 300;
             double divisions = 0;
             double lastDuration = 0; // for chords
+            int measureCount = 0;
+            bool isRightHand = true;
 
             foreach (var part in this.score.Parts)
             {
@@ -81,6 +86,13 @@ namespace Melody.Logic
                         divisions = measure.Attributes.Divisions;
                     }
 
+                    if (isPractice)
+                    {
+                        this.PracticeNotes[++measureCount] = new List<Models.Note>();
+                        isRightHand = true;
+                        this.messenger.Send($"Processing measure no. {measureCount}...", "PracticeLoadResult");
+                    }
+
                     foreach (var element in measure.MeasureElements)
                     {
                         if (element.Type != MeasureElementType.Note)
@@ -88,6 +100,8 @@ namespace Melody.Logic
                             if (element.Type == MeasureElementType.Backup)
                             {
                                 durationSum -= (1 / (4 * (divisions / ((MusicXml.Domain.Backup)element.Element).Duration))) * 240;
+
+                                isRightHand = false;
                             }
                             else
                             {
@@ -133,9 +147,15 @@ namespace Melody.Logic
                             Pitch = temPitch,
                             Velocity = noteObj.Voice, // 7:28
                         };
+                        note.IsRightHand = isRightHand;
 
                         this.notes.Add(counter++, note);
                         this.LoadedNotes.Add(note);
+
+                        if (isPractice)
+                        {
+                            this.PracticeNotes[measureCount].Add(note);
+                        }
 
                         if (!noteObj.IsChordTone)
                         {
@@ -143,10 +163,16 @@ namespace Melody.Logic
                             durationSum += lastDuration;
                         }
                     }
+
+                    if (isPractice)
+                    {
+                        this.messenger.Send($"Stored {this.PracticeNotes[measureCount].Count} notes for measure no. {measureCount}.", "PracticeLoadResult");
+                    }
                 }
             }
 
             this.messenger.Send("Notes stored successfully for piano roll.", "PianorollLoadResult");
+
         }
 
         public void UpdateNotePositions(double canvasHeight)
@@ -216,6 +242,11 @@ namespace Melody.Logic
 
             noteSum += (this.maxOctave - this.minOctave + 1) * 7;
             return noteSum;
+        }
+
+        public void CreatePractice()
+        {
+            // PracticeNotes -> PracticeStucture.json
         }
     }
 }

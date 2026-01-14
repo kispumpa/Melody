@@ -24,6 +24,9 @@
                     Foreground="White"
                     BorderThickness="0"
                     Cursor="Hand">
+                <Button.Effect>
+                    <DropShadowEffect/>
+                </Button.Effect>
             </Button>
 
             <Button Content="Lejátszó" 
@@ -34,7 +37,11 @@
                     Background="#3498DB"
                     Foreground="White"
                     BorderThickness="0"
-                    Cursor="Hand"/>
+                    Cursor="Hand">
+                <Button.Effect>
+                    <DropShadowEffect/>
+                </Button.Effect>
+            </Button>
 
             <Button Content="Beállítások" 
                     Command="{Binding SettingsCommand}"
@@ -44,7 +51,11 @@
                     Background="Yellow"
                     Foreground="Black"
                     BorderThickness="0"
-                    Cursor="Hand"/>
+                    Cursor="Hand">
+                <Button.Effect>
+                    <DropShadowEffect/>
+                </Button.Effect>
+            </Button>
 
             <Button Content="Kilépés" 
                     Command="{Binding ExitCommand}"
@@ -54,7 +65,11 @@
                     Background="#E74C3C"
                     Foreground="White"
                     BorderThickness="0"
-                    Cursor="Hand"/>
+                    Cursor="Hand">
+                <Button.Effect>
+                    <DropShadowEffect/>
+                </Button.Effect>
+            </Button>
         </StackPanel>
     </Grid>
 </UserControl>

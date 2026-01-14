@@ -20,5 +20,7 @@ namespace Melody.Logic.Models
         public bool IsVisible { get; set; }
 
         public int Velocity { get; set; }
+
+        public bool IsRightHand { get; set; }
     }
 }

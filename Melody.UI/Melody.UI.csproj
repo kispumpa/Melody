@@ -16,6 +16,12 @@
     <AdditionalFiles Include="stylecop.json" />
   </ItemGroup>
 
+	<ItemGroup>
+		<None Update="Data\**\*">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+	
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="9.0.4" />
@@ -29,6 +35,12 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Melody.Logic\Melody.Logic.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Data\sheetCollection.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
 
 </Project>
