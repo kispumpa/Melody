@@ -23,10 +23,9 @@
 
         <Grid x:Name="pianorollGrid" Grid.Row="1" Visibility="{Binding IsPianoRollView, Converter={StaticResource BoolToVisibilityConverter}}">
             <Grid.RowDefinitions>
-                <RowDefinition Height="10*"/>   
+                <RowDefinition Height="10*"/>
                 <RowDefinition Height="2*"/>
             </Grid.RowDefinitions>
-            <TextBlock Text="Piano Roll View" FontSize="30" HorizontalAlignment="Center" VerticalAlignment="Center"/>
         </Grid>
     </Grid>
 </Window>

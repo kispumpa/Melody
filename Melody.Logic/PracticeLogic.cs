@@ -206,6 +206,7 @@ namespace Melody.Logic
             {
                 messenger.Send($"Practice with id {key} found, loading into Melody...", "PracticeLogicResult");
                 FileController.Load(this);
+                var keysCache = PracticeNotes.Keys.ToList();
             }
             else
             {
