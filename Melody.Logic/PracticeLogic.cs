@@ -213,5 +213,16 @@ namespace Melody.Logic
                 messenger.Send($"Practice with id {key} not found!", "PracticeLogicResult");
             }
         }
+
+        public void SaveProgress(int currentCombo)
+        {
+            progress.CurrentCombo = currentCombo;
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            };
+            string progressData = JsonSerializer.Serialize(progress, options);
+            FileController.Save(data: progressData, name: $"{key}_progress.json");
+        }
     }
 }

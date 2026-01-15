@@ -13,5 +13,7 @@ namespace Melody.Logic.Interfaces
         void CreatePractice(Dictionary<double, List<Note>> practiceNotes, string fileName, int totalVisibleNotes, int minOctave);
         void LoadPractice();
         void LoadPractice(string key);
+
+        void SaveProgress(int currentCombo);
     }
 }

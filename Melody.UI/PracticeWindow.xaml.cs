@@ -2,6 +2,7 @@
 using Melody.Logic.Interfaces;
 using Melody.Logic.Models;
 using Melody.UI.ViewModels;
+using NAudio.Midi;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -36,8 +37,12 @@ namespace Melody.UI
         private object currentMeasureNumber;
         private double canvasHeight;
         private int currentMeasureIndex;
+        private int allMeasure;
         private DateTime pianoRollStartTime;
         private double change;
+        private bool isPianoRollInitialized = false;
+        private bool isPianoRollPlaying = false;
+        private double duration;
 
         public PracticeWindow()
         {
@@ -50,6 +55,9 @@ namespace Melody.UI
             this.DataContext = this.viewModel;
             this.noteRectangles = new Dictionary<Note, Rectangle>();
             this.viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+            CompositionTarget.Rendering += UpdateFrame;
+            this.Closing += PracticeWindow_Closing;
         }
 
         private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
@@ -89,15 +97,27 @@ namespace Melody.UI
 
             currentMeasureIndex = this.viewModel.PracticeLogic.Progress.CurrentCombo;
             currentMeasureNumber = this.viewModel.PracticeLogic.Structure.Combos[currentMeasureIndex].MeasureNumber;
-            CreateNextNotesInCanvas(viewModel.PracticeLogic); // ehelyett a PracticeLogic-ból a következő egységet hívja meg
-            pianoRollStartTime = DateTime.Now;
-            UpdatePianoRollFrame();
+            CreateNextNotesInCanvas(viewModel.PracticeLogic);
+            allMeasure = this.viewModel.PracticeLogic.Progress.TotalCombo;
 
+            UpdateProgressText();
 
-            //isPianoRollPlaying = false;
-            //isPianoRollInitialized = true;
+            btn_startPractice.IsEnabled = true;
+            isPianoRollInitialized = true;
+
 
             Debug.WriteLine("Piano roll loaded for practice.");
+        }
+
+        private void IncreadeCurrentMeasure()
+        {
+            currentMeasureIndex++;
+            if (currentMeasureIndex >= this.viewModel.PracticeLogic.Structure.Combos.Count)
+            {
+                currentMeasureIndex = this.viewModel.PracticeLogic.Structure.Combos.Count - 1;
+            }
+
+            currentMeasureNumber = this.viewModel.PracticeLogic.Structure.Combos[currentMeasureIndex].MeasureNumber;
         }
 
         private void CreateNextNotesInCanvas(IPracticeLogic logic)
@@ -262,10 +282,18 @@ namespace Melody.UI
                 //}
             }
 
-            //if (elapsed >= totalDuration)
-            //{
-            //    StopButton_Click(null, null);
-            //}
+            if (elapsed >= duration)
+            {
+                isPianoRollPlaying = false;
+                btn_retry.IsEnabled = true;
+                btn_continue.IsEnabled = true;
+            }
+        }
+
+        private void UpdateProgressText()
+        {
+            var prog = (double)currentMeasureIndex / (double)allMeasure * 100;
+            practiceDisplay.Text = $"Progress: {(int)prog}%";
         }
 
         private Canvas CreatePianoKeys(IPianorollLogic logic)
@@ -335,6 +363,63 @@ namespace Melody.UI
             Debug.WriteLine("Piano roll initialized for practice.");
             this.viewModel.PracticeLogic.LoadPractice();
             LoadPianoRoll();
+        }
+
+        private void UpdateFrame(object sender, EventArgs e)
+        {
+            if (isPianoRollInitialized && isPianoRollPlaying && pianoRollCanvas != null)
+            {
+                UpdatePianoRollFrame();
+            }
+        }
+
+        private void StartPracticeButton_Click(object sender, RoutedEventArgs e)
+        {
+            btn_startPractice.IsEnabled = false;
+            btn_continue.IsEnabled = false;
+
+            pianoRollStartTime = DateTime.Now;
+            CalculateDuration();
+
+            isPianoRollPlaying = true;
+        }
+
+        private void CalculateDuration()
+        {
+            duration = noteRectangles.Max(n => n.Key.Y.Position + n.Key.Y.Length) / PixelsPerSecond;
+        }
+
+        private void RetryButton_Click(object sender, RoutedEventArgs e)
+        {
+            btn_startPractice.IsEnabled = false;
+            btn_continue.IsEnabled = false;
+            CreateNextNotesInCanvas(viewModel.PracticeLogic);
+            pianoRollStartTime = DateTime.Now;
+            isPianoRollPlaying = true;
+            btn_retry.IsEnabled = false;
+        }
+
+        private void ContinueButton_Click(object sender, RoutedEventArgs e)
+        {
+            btn_continue.IsEnabled = false;
+            btn_retry.IsEnabled = false;
+            IncreadeCurrentMeasure();
+            UpdateProgressText();
+            CreateNextNotesInCanvas(viewModel.PracticeLogic);
+
+            btn_startPractice.IsEnabled = true;
+        }
+
+        private void PracticeWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            CompositionTarget.Rendering -= UpdateFrame;
+            //midiOut?.Dispose();
+            isPianoRollInitialized = false;
+            isPianoRollPlaying = false;
+
+            this.viewModel.ToggleLogic.ToggleView();
+
+            viewModel.PracticeLogic.SaveProgress(currentMeasureIndex);
         }
     }
 }
