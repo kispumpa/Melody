@@ -23,18 +23,23 @@
         </StackPanel>
 
         <Grid Background="#2C3E50" Grid.Row="1">
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" 
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
+                <TextBlock Text="Let's practice!" FontSize="30" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                <TextBlock Text="At first, connect the piano through the USB." FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                <TextBlock x:Name="midiConnectionDisplay" Text="Waiting for piano signal..." FontSize="20" FontWeight="Bold" Foreground="#E74C3C" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" 
                     Visibility="{Binding IsButtonView, Converter={StaticResource BoolToVisibilityConverter}}">
-                <Button Content="Create Practice" FontSize="20" HorizontalAlignment="Left" Command="{Binding CreateSheetCommand}" Margin="20,0" Height="66" Width="200" Background="Yellow" Cursor="Hand">
-                    <Button.Effect>
-                        <DropShadowEffect/>
-                    </Button.Effect>
-                </Button>
-                <Button Content="Load Practice" FontSize="20" HorizontalAlignment="Left" Command="{Binding LoadSheetCommand}" Margin="20,0" Height="66" Width="200" Background="#27AE60" Cursor="Hand">
-                    <Button.Effect>
-                        <DropShadowEffect/>
-                    </Button.Effect>
-                </Button>
+                    <Button x:Name="btn_createPractice" Content="Create Practice" IsEnabled="False" FontSize="20" HorizontalAlignment="Left" Command="{Binding CreateSheetCommand}" Margin="20,0" Height="66" Width="200" Background="Yellow" Cursor="Hand">
+                        <Button.Effect>
+                            <DropShadowEffect/>
+                        </Button.Effect>
+                    </Button>
+                    <Button x:Name="btn_loadPractice" Content="Load Practice" IsEnabled="False" FontSize="20" HorizontalAlignment="Left" Command="{Binding LoadSheetCommand}" Margin="20,0" Height="66" Width="200" Background="#27AE60" Cursor="Hand">
+                        <Button.Effect>
+                            <DropShadowEffect/>
+                        </Button.Effect>
+                    </Button>
+                </StackPanel>
             </StackPanel>
         </Grid>
 

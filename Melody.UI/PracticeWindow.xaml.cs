@@ -2,13 +2,16 @@
 using Melody.Logic.Interfaces;
 using Melody.Logic.Models;
 using Melody.UI.ViewModels;
+using NAudio.CoreAudioApi;
 using NAudio.Midi;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -33,7 +36,7 @@ namespace Melody.UI
         private PracticeWindowViewModel viewModel;
         private Canvas pianoKeysCanvas;
         private Canvas pianoRollCanvas;
-        private Dictionary<Note, Rectangle> noteRectangles;
+        private Dictionary<Note, System.Windows.Shapes.Rectangle> noteRectangles;
         private object currentMeasureNumber;
         private double canvasHeight;
         private int currentMeasureIndex;
@@ -42,7 +45,28 @@ namespace Melody.UI
         private double change;
         private bool isPianoRollInitialized = false;
         private bool isPianoRollPlaying = false;
+        private bool isMidiInAvailable = false;
+        private bool isWaiting = false;
         private double duration;
+        private List<string> midiInDevices;
+        private MidiIn midiIn;
+        private List<int> pushedPitches;
+        private List<int> waitingPitches;
+        private Dictionary<string, int> NAudioNote = new Dictionary<string, int>
+        {
+            {"C", 0 },
+            {"C#", 1 },
+            {"D", 2 },
+            {"D#", 3 },
+            {"E", 4 },
+            {"F", 5 },
+            {"F#", 6 },
+            {"G", 7 },
+            {"G#", 8 },
+            {"A", 9 },
+            {"A#", 10 },
+            {"B", 11 },
+        };
 
         public PracticeWindow()
         {
@@ -53,9 +77,12 @@ namespace Melody.UI
               Ioc.Default.GetService<IToggleViewLogic>());
 
             this.DataContext = this.viewModel;
-            this.noteRectangles = new Dictionary<Note, Rectangle>();
-            this.viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            this.noteRectangles = new Dictionary<Note, System.Windows.Shapes.Rectangle>();
+            midiInDevices = new List<string>();
+            pushedPitches = new List<int>();
+            waitingPitches = new List<int>();
 
+            this.viewModel.PropertyChanged += ViewModel_PropertyChanged;
             CompositionTarget.Rendering += UpdateFrame;
             this.Closing += PracticeWindow_Closing;
         }
@@ -86,7 +113,7 @@ namespace Melody.UI
 
             pianoRollCanvas = new Canvas
             {
-                Background = new SolidColorBrush(Color.FromRgb(200, 230, 255)),
+                Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(200, 230, 255)),
                 ClipToBounds = true,
             };
             this.pianorollGrid.Children.Add(this.pianoRollCanvas);
@@ -223,12 +250,12 @@ namespace Melody.UI
             {
                 var note = viewModel.PracticeLogic.PracticeNotes[measureNumber][number];
 
-                var rect = new Rectangle
+                var rect = new System.Windows.Shapes.Rectangle
                 {
                     Width = note.X.Length,
                     Height = note.Y.Length,
-                    Fill = new SolidColorBrush(Color.FromRgb(255, 165, 0)),
-                    Stroke = Brushes.Black,
+                    Fill = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 165, 0)),
+                    Stroke = System.Windows.Media.Brushes.Black,
                     StrokeThickness = 1,
                     Visibility = Visibility.Hidden,
                 };
@@ -275,11 +302,14 @@ namespace Melody.UI
                     rect.Visibility = Visibility.Hidden;
                 }
 
-                //if (!note.Played && y <= 0 && y > -note.Y.Length)
-                //{
-                //    this.PlayNote(note.Pitch, (int)note.Y.Length);
-                //    note.Played = true;
-                //}
+                if (!note.Played && y <= 0 && y > -note.Y.Length)
+                {
+                    PlayNote(note.Pitch, (int)note.Y.Length);
+                    int midiNote = PitchToMidi(note.Pitch);
+                    waitingPitches.Add(midiNote);
+                    isWaiting = true;
+                    note.Played = true;
+                }
             }
 
             if (elapsed >= duration)
@@ -288,6 +318,26 @@ namespace Melody.UI
                 btn_retry.IsEnabled = true;
                 btn_continue.IsEnabled = true;
             }
+        }
+
+        private void PlayNote(string pitch, int length)
+        {
+            int midiNote = PitchToMidi(pitch);
+
+            int durationMs = (int)((length / PixelsPerSecond) * 1000);
+
+            Task.Delay(durationMs).ContinueWith(_ =>
+            {
+                waitingPitches.Remove(midiNote);
+            });
+        }
+
+        private int PitchToMidi(string pitch)
+        {
+            string step = pitch.Remove(pitch.Length - 1, 1);
+            int octave = int.Parse(pitch.Substring(pitch.Length - 1, 1));
+            var midiNote = (int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + (12 * octave);
+            return midiNote;
         }
 
         private void UpdateProgressText()
@@ -312,12 +362,12 @@ namespace Melody.UI
                 int noteValue = i % 7;
                 bool hasBlackKey = noteValue == 0 || noteValue == 1 || noteValue == 3 || noteValue == 4 || noteValue == 5;
 
-                var whiteKey = new Rectangle
+                var whiteKey = new System.Windows.Shapes.Rectangle
                 {
                     Width = keyWidth,
                     Height = keyHeight,
-                    Fill = Brushes.White,
-                    Stroke = Brushes.Gray,
+                    Fill = System.Windows.Media.Brushes.White,
+                    Stroke = System.Windows.Media.Brushes.Gray,
                     StrokeThickness = 1,
                 };
                 canvas.Children.Add(whiteKey);
@@ -325,12 +375,12 @@ namespace Melody.UI
 
                 if (hasBlackKey)
                 {
-                    var blackKey = new Rectangle
+                    var blackKey = new System.Windows.Shapes.Rectangle
                     {
                         Width = keyWidth / 2,
                         Height = keyHeight / 2,
-                        Fill = Brushes.Black,
-                        Stroke = Brushes.Gray,
+                        Fill = System.Windows.Media.Brushes.Black,
+                        Stroke = System.Windows.Media.Brushes.Gray,
                         StrokeThickness = 1,
                     };
                     canvas.Children.Add(blackKey);
@@ -344,7 +394,7 @@ namespace Melody.UI
                     {
                         Text = $"{(Step)noteValue}{logic.MinOctave + (i / 7)}",
                         FontSize = 11,
-                        Foreground = Brushes.Black,
+                        Foreground = System.Windows.Media.Brushes.Black,
                     };
                     canvas.Children.Add(label);
                     Canvas.SetLeft(label, (keyWidth * i) + 2);
@@ -367,10 +417,101 @@ namespace Melody.UI
 
         private void UpdateFrame(object sender, EventArgs e)
         {
-            if (isPianoRollInitialized && isPianoRollPlaying && pianoRollCanvas != null)
+            //if (isPianoRollInitialized && isPianoRollPlaying  && !isWaiting && pianoRollCanvas != null)
+            if (isPianoRollInitialized && isPianoRollPlaying  && pianoRollCanvas != null)
             {
                 UpdatePianoRollFrame();
             }
+
+            if (!isMidiInAvailable)
+            {
+                for (int device = 0; device < MidiIn.NumberOfDevices; device++)
+                {
+                    midiInDevices.Add(MidiIn.DeviceInfo(device).ProductName);
+                }
+            }
+
+            if (!isMidiInAvailable && midiInDevices.Count > 0)
+            {
+                isMidiInAvailable = true;
+                SetMidiIn();
+            }
+
+            //if (isWaiting)
+            //{
+            //    WaitingForMatch();
+            //}
+        }
+
+        private void WaitingForMatch()
+        {
+            bool egyezik = pushedPitches.Count == waitingPitches.Count &&
+               pushedPitches.OrderBy(x => x).SequenceEqual(waitingPitches.OrderBy(x => x));
+            if (egyezik && pushedPitches.Count != 0)
+            {
+                isWaiting = false;
+            }
+        }
+
+        private void SetMidiIn()
+        {
+            midiInDevices.Add(MidiIn.DeviceInfo(0).ProductName);
+            midiIn = new MidiIn(0);
+            midiIn.MessageReceived += MidiIn_MessageReceived;
+
+            midiConnectionDisplay.Text = $"Piano connected: {midiInDevices[0]}";
+            midiConnectionDisplay.Foreground = (System.Windows.Media.Brush)new BrushConverter().ConvertFrom("#27AE60");
+
+            btn_createPractice.IsEnabled = true;
+            btn_loadPractice.IsEnabled = true;
+            midiIn.Start();
+
+        }
+
+        private void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
+        {
+            if (e.MidiEvent.CommandCode == MidiCommandCode.NoteOn)
+            {
+                string message = e.MidiEvent.ToString();
+                if (message.Contains("Len"))
+                {
+                    string messagePitch = ExtractValue(message);
+                    int midiNote = NAudioPitchToMidi(messagePitch);
+                    pushedPitches.Add(midiNote);
+                }
+                else
+                {
+                    string messagePitch = ExtractValue(message);
+                    int midiNote = NAudioPitchToMidi(messagePitch);
+                    pushedPitches.Remove(midiNote);
+                }
+            }
+        }
+
+        private string ExtractValue(string text)
+        {
+            // A minta magyarázata:
+            // Ch:\s+\d+\s+  -> Keresi a "Ch:" szót, utána szóközöket, számokat, majd megint szóközt
+            // (?<ertek>.*?) -> Ez a "Capture Group": elmenti az összes karaktert egy 'ertek' nevű csoportba
+            // \s+Vel        -> Egészen addig olvas, amíg szóközt és a "Vel" szót nem találja
+            string pattern = @"Ch:\s+\d+\s+(?<ertek>.*?)\s+Vel";
+
+            Match match = Regex.Match(text, pattern);
+
+            if (match.Success)
+            {
+                return match.Groups["ertek"].Value.Trim();
+            }
+
+            return string.Empty; // Ha nem találja, üresen tér vissza
+        }
+
+        private int NAudioPitchToMidi(string pitch)
+        {
+            string step = pitch.Remove(pitch.Length - 1, 1);
+            int octave = int.Parse(pitch.Substring(pitch.Length - 1, 1));
+            var midiNote = NAudioNote[step] + (12 * octave);
+            return midiNote;
         }
 
         private void StartPracticeButton_Click(object sender, RoutedEventArgs e)
