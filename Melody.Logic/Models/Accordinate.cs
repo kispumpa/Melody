@@ -7,8 +7,10 @@ namespace Melody.Logic.Models
     /// </summary>
     public class Accordinate
     {
+        /// <summary>Gets or sets the position of the musical rectangle.</summary>
         public double Position { get; set; }
 
+        /// <summary>Gets or sets the length of the musical rectangle.</summary>
         public double Length { get; set; }
     }
 }

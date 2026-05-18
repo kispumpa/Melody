@@ -8,5 +8,11 @@
         <DataTemplate DataType="{x:Type vms:MenuWindowViewModel}">
             <local:MenuWindow />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:MainWindowViewModel}">
+            <local:MainWindow />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:PracticeWindowViewModel}">
+            <local:PracticeWindow />
+        </DataTemplate>
     </Application.Resources>
 </Application>

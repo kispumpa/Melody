@@ -1,14 +1,14 @@
-﻿<Window x:Class="Melody.UI.MainWindow"
+﻿<UserControl x:Class="Melody.UI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Melody.UI"
         mc:Ignorable="d"
-        Title="Melody" WindowState="Maximized" WindowStartupLocation="CenterScreen" ResizeMode="NoResize" d:DesignHeight="540" d:DesignWidth="960">
-    <Window.Resources>
+        d:DesignHeight="540" d:DesignWidth="960">
+    <UserControl.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
-    </Window.Resources>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
@@ -18,6 +18,15 @@
 
         <!-- Upper Control Panel -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+            <Button Command="{Binding GoHomeCommand}" Padding="10,5" Margin="0,0,20,0" Background="#34495E" Foreground="White" BorderThickness="0">
+                <StackPanel Orientation="Horizontal">
+
+                    <Path Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" 
+              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" 
+              Width="16" Height="16" 
+              Stretch="Uniform" />
+                </StackPanel>
+            </Button>
             <Button Content="Load Sheet music" Command="{Binding LoadSheetCommand}" Margin="0,0,10,0" Padding="10,5"/>
             <ComboBox ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" 
                       Width="200" Margin="0,0,10,0" VerticalContentAlignment="Center"/>
@@ -58,5 +67,47 @@
             <Button x:Name="stopButton" Content="⏹ Stop" Padding="15,5" Margin="5" Click="StopButton_Click" IsEnabled="False"/>
             <TextBlock x:Name="timeDisplay" Text="00:00 / 00:00" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14"/>
         </StackPanel>
+
+        <!--Loading Overlay-->
+        <Grid Grid.RowSpan="3" Background="#E62C3E50" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" Panel.ZIndex="100">
+            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="500">
+
+                <TextBlock Text="Fájl feldolgozása folyamatban..." 
+                   Foreground="White" 
+                   FontSize="22" 
+                   FontWeight="SemiBold"
+                   HorizontalAlignment="Center" 
+                   Margin="0,0,0,15"/>
+
+                <ProgressBar IsIndeterminate="True" 
+                     Height="8" 
+                     Foreground="#3498DB" 
+                     Background="#1A252F" 
+                     BorderThickness="0"
+                     Margin="0,0,0,25"/>
+
+                <Expander Header="Részletek megjelenítése" 
+                  Foreground="White" 
+                  Background="#34495E" 
+                  BorderBrush="#1A252F" 
+                  BorderThickness="1">
+                    <Border Background="#1A252F" Height="150" Padding="10">
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                            <ListBox ItemsSource="{Binding LoadingMessages}" 
+                             Background="Transparent" 
+                             BorderThickness="0" 
+                             Foreground="#BDC3C7">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="2,4"/>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                        </ScrollViewer>
+                    </Border>
+                </Expander>
+
+            </StackPanel>
+        </Grid>
     </Grid>
-</Window>
+</UserControl>

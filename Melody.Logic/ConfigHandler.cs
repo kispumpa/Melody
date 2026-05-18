@@ -1,40 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using YamlDotNet.Serialization;
-using YamlDotNet.Serialization.NamingConventions;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.Logic
 {
-    public class LilypondConfig
-    {
-        public string PythonPath { get; set; }
+    using Melody.Logic.Models;
+    using YamlDotNet.Serialization;
+    using YamlDotNet.Serialization.NamingConventions;
 
-        public string LilypondPath { get; set; }
-
-        public string Mxml2lyPath { get; set; }
-    }
-
-    public class ConfigObject
-    {
-        public LilypondConfig LilypondConfig { get; set; }
-    }
-
+    /// <summary>Handles reading and parsing the configuration file for the Melody application.</summary>
     public class ConfigHandler
     {
+        /// <summary>Reads and parses the configuration file for the Melody application.</summary>
+        /// <param name="filePath">The path to the configuration file.</param>
+        /// <returns>The parsed configuration object.</returns>
         public static ConfigObject ReadConfigFile(string filePath)
         {
             try
             {
-                var yamlContent = File.ReadAllText(filePath);
+                string yamlContent = File.ReadAllText(filePath);
 
-                var deserializer = new DeserializerBuilder()
+                IDeserializer deserializer = new DeserializerBuilder()
                     .WithNamingConvention(CamelCaseNamingConvention.Instance)
                     .Build();
 
-                var config = deserializer.Deserialize<ConfigObject>(yamlContent);
+                ConfigObject config = deserializer.Deserialize<ConfigObject>(yamlContent);
 
                 return config;
             }

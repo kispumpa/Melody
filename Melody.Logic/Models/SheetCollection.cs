@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json.Serialization;
-using System.Threading.Tasks;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.Logic.Models
 {
+    using System.Text.Json.Serialization;
+
+    /// <summary>Represents a collection of sheets.</summary>
     public class SheetCollection
     {
+        /// <summary>Gets or sets the dictionary of sheets.</summary>
         [JsonPropertyName("sheets")]
-        public Dictionary<string, string> Sheets { get; set; } //id, name
+        public Dictionary<string, string> Sheets { get; set; } // id, name
     }
 }

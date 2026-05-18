@@ -1,34 +1,20 @@
-﻿using CommunityToolkit.Mvvm.DependencyInjection;
-using Melody.Logic.Interfaces;
+﻿using Melody.Logic.Interfaces;
 using Melody.Logic.Models;
 using Melody.UI.ViewModels;
-using NAudio.CoreAudioApi;
 using NAudio.Midi;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
-using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Melody.UI
 {
     /// <summary>
     /// Interaction logic for PracticeWindow.xaml
     /// </summary>
-    public partial class PracticeWindow : Window
+    public partial class PracticeWindow : UserControl
     {
         private const double PlaybackSpeed = 1.0;
         private const double PixelsPerSecond = 60;
@@ -71,41 +57,119 @@ namespace Melody.UI
         public PracticeWindow()
         {
             InitializeComponent();
-            this.viewModel = new ViewModels.PracticeWindowViewModel(Ioc.Default.GetService<IPianorollLogic>(),
-              Ioc.Default.GetService<IMxlUnpacker>(),
-              Ioc.Default.GetService<IPracticeLogic>(),
-              Ioc.Default.GetService<IToggleViewLogic>());
+            //this.viewModel = new ViewModels.PracticeWindowViewModel(Ioc.Default.GetService<IPianorollLogic>(),
+            //  Ioc.Default.GetService<IMxlUnpacker>(),
+            //  Ioc.Default.GetService<IPracticeLogic>(),
+            //  Ioc.Default.GetService<IToggleViewLogic>());
 
-            this.DataContext = this.viewModel;
+            //this.DataContext = this.viewModel;
+            this.DataContextChanged += PracticeWindow_DataContextChanged;
+
             this.noteRectangles = new Dictionary<Note, System.Windows.Shapes.Rectangle>();
             midiInDevices = new List<string>();
             pushedPitches = new List<int>();
             waitingPitches = new List<int>();
 
-            this.viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            //this.viewModel.PropertyChanged += ViewModel_PropertyChanged;
+            //CompositionTarget.Rendering += UpdateFrame;
+            this.Loaded += this.PracticeWindow_Loaded;
+            this.Unloaded += PracticeWindow_Unloaded;
+        }
+
+        private void PracticeWindow_Loaded(object sender, RoutedEventArgs e)
+        {
+            Debug.WriteLine("PracticeWindow loaded!");
+            CompositionTarget.Rendering -= UpdateFrame;
             CompositionTarget.Rendering += UpdateFrame;
-            this.Closing += PracticeWindow_Closing;
+
+            if (this.viewModel.AreFilesLoaded && !this.isPianoRollInitialized)
+            {
+                Debug.WriteLine("Restoring existing practice piano roll...");
+                LoadPianoRoll();
+            }
+            else if (this.viewModel.IsPianorollLoaded && !this.isPianoRollInitialized)
+            {
+                Debug.WriteLine("Re-initializing practice piano roll...");
+                InitializePianoRoll();
+            }
         }
 
         private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(PracticeWindowViewModel.IsPianorollLoaded))
+            //if (e.PropertyName == nameof(PracticeWindowViewModel.IsPianorollLoaded))
+            //{
+            //    Debug.WriteLine("Initializing piano roll...");
+            //    this.viewModel.ToggleLogic.ToggleView();
+            //    this.InitializePianoRoll();
+            //}
+            //else if (e.PropertyName == nameof(PracticeWindowViewModel.AreFilesLoaded))
+            //{
+            //    Debug.WriteLine("Loading piano roll practice with selected id...");
+            //    this.viewModel.ToggleLogic.ToggleView();
+            //    this.LoadPianoRoll();
+            //}
+            if (e.PropertyName == nameof(PracticeWindowViewModel.AreFilesLoaded))
             {
-                Debug.WriteLine("Initializing piano roll...");
-                this.viewModel.ToggleLogic.ToggleView();
-                this.InitializePianoRoll();
+                // Csak akkor töltsünk be, ha az érték IGAZ lett (és nem false-ra állítottuk vissza)
+                if (this.viewModel.AreFilesLoaded)
+                {
+                    Debug.WriteLine("Loading piano roll practice with selected id...");
+
+                    // Csak akkor váltsunk nézetet, ha épp a gombokat látjuk!
+                    if (!this.viewModel.ToggleLogic.IsPianoRollView)
+                    {
+                        this.viewModel.ToggleLogic.ToggleView();
+                    }
+
+                    this.LoadPianoRoll();
+                }
             }
-            else if (e.PropertyName == nameof(PracticeWindowViewModel.AreFilesLoaded))
+            else if (e.PropertyName == nameof(PracticeWindowViewModel.IsPianorollLoaded))
             {
-                Debug.WriteLine("Loading piano roll practice with selected id...");
-                this.viewModel.ToggleLogic.ToggleView();
-                this.LoadPianoRoll();
+                if (this.viewModel.IsPianorollLoaded)
+                {
+                    if (!this.viewModel.ToggleLogic.IsPianoRollView)
+                    {
+                        this.viewModel.ToggleLogic.ToggleView();
+                    }
+                    this.InitializePianoRoll();
+                }
+            }
+        }
+
+        private void PracticeWindow_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (e.OldValue is PracticeWindowViewModel oldViewModel)
+            {
+                oldViewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            }
+
+            if (e.NewValue is PracticeWindowViewModel passedViewModel)
+            {
+                this.viewModel = passedViewModel;
+
+                this.viewModel.PropertyChanged += ViewModel_PropertyChanged;
+
+                if (this.IsLoaded)
+                {
+                    if (this.viewModel.AreFilesLoaded && !this.isPianoRollInitialized)
+                    {
+                        LoadPianoRoll();
+                    }
+                    else if (this.viewModel.IsPianorollLoaded && !this.isPianoRollInitialized)
+                    {
+                        InitializePianoRoll();
+                    }
+                }
             }
         }
 
         private void LoadPianoRoll()
         {
-            var logic = this.viewModel.PianorollLogic;
+            pianorollGrid.Children.Clear();
+            noteRectangles.Clear();
+
+            IPianorollLogic logic = this.viewModel.PianorollLogic;
 
             pianoKeysCanvas = CreatePianoKeys(logic);
             pianorollGrid.Children.Add(pianoKeysCanvas);
@@ -246,11 +310,11 @@ namespace Melody.UI
         {
             string id = $"{side}{measureNumber}";
             Measure measure = viewModel.PracticeLogic.MeasureList.Measures.FirstOrDefault(m => m.ID == id);
-            foreach (var number in measure.NoteNumbers)
+            foreach (int number in measure.NoteNumbers)
             {
-                var note = viewModel.PracticeLogic.PracticeNotes[measureNumber][number];
+                Note note = viewModel.PracticeLogic.PracticeNotes[measureNumber][number];
 
-                var rect = new System.Windows.Shapes.Rectangle
+                System.Windows.Shapes.Rectangle rect = new System.Windows.Shapes.Rectangle
                 {
                     Width = note.X.Length,
                     Height = note.Y.Length,
@@ -275,8 +339,8 @@ namespace Melody.UI
             {
 
             }
-            var number = measure.NoteNumbers[0];
-            var note = viewModel.PracticeLogic.PracticeNotes[measureNumber][number];
+            int number = measure.NoteNumbers[0];
+            Note note = viewModel.PracticeLogic.PracticeNotes[measureNumber][number];
             change = note.Y.Position - 300;
         }
 
@@ -284,10 +348,10 @@ namespace Melody.UI
         {
             double elapsed = (DateTime.Now - pianoRollStartTime).TotalSeconds * PlaybackSpeed;
 
-            foreach (var kvp in this.noteRectangles)
+            foreach (KeyValuePair<Note, System.Windows.Shapes.Rectangle> kvp in this.noteRectangles)
             {
-                var note = kvp.Key;
-                var rect = kvp.Value;
+                Note note = kvp.Key;
+                System.Windows.Shapes.Rectangle rect = kvp.Value;
 
                 double y = note.Y.Position - (elapsed * PixelsPerSecond);
                 bool isVisible = (y + note.Y.Length > 0) && (y < canvasHeight);
@@ -322,33 +386,33 @@ namespace Melody.UI
 
         private void PlayNote(string pitch, int length)
         {
-            int midiNote = PitchToMidi(pitch);
+            //int midiNote = PitchToMidi(pitch);
 
-            int durationMs = (int)((length / PixelsPerSecond) * 1000);
+            //int durationMs = (int)((length / PixelsPerSecond) * 1000);
 
-            Task.Delay(durationMs).ContinueWith(_ =>
-            {
-                waitingPitches.Remove(midiNote);
-            });
+            //Task.Delay(durationMs).ContinueWith(_ =>
+            //{
+            //    waitingPitches.Remove(midiNote);
+            //});
         }
 
         private int PitchToMidi(string pitch)
         {
             string step = pitch.Remove(pitch.Length - 1, 1);
             int octave = int.Parse(pitch.Substring(pitch.Length - 1, 1));
-            var midiNote = (int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + (12 * octave);
+            int midiNote = (int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + (12 * octave);
             return midiNote;
         }
 
         private void UpdateProgressText()
         {
-            var prog = (double)currentMeasureIndex / (double)allMeasure * 100;
+            double prog = (double)currentMeasureIndex / (double)allMeasure * 100;
             practiceDisplay.Text = $"Progress: {(int)prog}%";
         }
 
         private Canvas CreatePianoKeys(IPianorollLogic logic)
         {
-            var canvas = new Canvas
+            Canvas canvas = new Canvas
             {
                 Width = this.ActualWidth,
                 Height = this.pianorollGrid.RowDefinitions[1].ActualHeight,
@@ -362,7 +426,7 @@ namespace Melody.UI
                 int noteValue = i % 7;
                 bool hasBlackKey = noteValue == 0 || noteValue == 1 || noteValue == 3 || noteValue == 4 || noteValue == 5;
 
-                var whiteKey = new System.Windows.Shapes.Rectangle
+                System.Windows.Shapes.Rectangle whiteKey = new System.Windows.Shapes.Rectangle
                 {
                     Width = keyWidth,
                     Height = keyHeight,
@@ -375,7 +439,7 @@ namespace Melody.UI
 
                 if (hasBlackKey)
                 {
-                    var blackKey = new System.Windows.Shapes.Rectangle
+                    System.Windows.Shapes.Rectangle blackKey = new System.Windows.Shapes.Rectangle
                     {
                         Width = keyWidth / 2,
                         Height = keyHeight / 2,
@@ -390,7 +454,7 @@ namespace Melody.UI
 
                 if (noteValue == 0)
                 {
-                    var label = new TextBlock
+                    TextBlock label = new TextBlock
                     {
                         Text = $"{(Step)noteValue}{logic.MinOctave + (i / 7)}",
                         FontSize = 11,
@@ -407,7 +471,7 @@ namespace Melody.UI
 
         private void InitializePianoRoll()
         {
-            var logic = this.viewModel.PianorollLogic;
+            IPianorollLogic logic = this.viewModel.PianorollLogic;
             logic.StoreNotes(this.ActualWidth, isPractice: true);
             this.viewModel.PracticeLogic.CreatePractice(logic.PracticeNotes, this.viewModel.FileName, viewModel.PianorollLogic.TotalVisibleNotes, viewModel.PianorollLogic.MinOctave);
             Debug.WriteLine("Piano roll initialized for practice.");
@@ -417,8 +481,8 @@ namespace Melody.UI
 
         private void UpdateFrame(object sender, EventArgs e)
         {
-            //if (isPianoRollInitialized && isPianoRollPlaying  && !isWaiting && pianoRollCanvas != null)
-            if (isPianoRollInitialized && isPianoRollPlaying  && pianoRollCanvas != null)
+            if (isPianoRollInitialized && isPianoRollPlaying && !isWaiting && pianoRollCanvas != null)
+            //if (isPianoRollInitialized && isPianoRollPlaying  && pianoRollCanvas != null)
             {
                 UpdatePianoRollFrame();
             }
@@ -437,10 +501,10 @@ namespace Melody.UI
                 SetMidiIn();
             }
 
-            //if (isWaiting)
-            //{
-            //    WaitingForMatch();
-            //}
+            if (isWaiting)
+            {
+                WaitingForMatch();
+            }
         }
 
         private void WaitingForMatch()
@@ -450,6 +514,8 @@ namespace Melody.UI
             if (egyezik && pushedPitches.Count != 0)
             {
                 isWaiting = false;
+                waitingPitches.Clear();
+                pushedPitches.Clear();
             }
         }
 
@@ -470,21 +536,47 @@ namespace Melody.UI
 
         private void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
-            if (e.MidiEvent.CommandCode == MidiCommandCode.NoteOn)
+            //if (e.MidiEvent.CommandCode == MidiCommandCode.NoteOn)
+            //{
+            //    string message = e.MidiEvent.ToString();
+            //    if (message.Contains("Len"))
+            //    {
+            //        string messagePitch = ExtractValue(message);
+            //        int midiNote = NAudioPitchToMidi(messagePitch);
+            //        Debug.WriteLine($"Note on received: {messagePitch} (MIDI note {midiNote})");
+            //        pushedPitches.Add(midiNote);
+            //    }
+            //    else
+            //    {
+            //        string messagePitch = ExtractValue(message);
+            //        int midiNote = NAudioPitchToMidi(messagePitch);
+            //        pushedPitches.Remove(midiNote);
+            //    }
+            //}
+            // Ellenőrizzük, hogy ez egy NoteOn típusú esemény-e
+            if (e.MidiEvent is NAudio.Midi.NoteOnEvent noteOn)
             {
-                string message = e.MidiEvent.ToString();
-                if (message.Contains("Len"))
+                int midiNote = noteOn.NoteNumber;
+
+                // Ha a Velocity nagyobb mint 0, akkor a billentyűt Lenyomták
+                if (noteOn.Velocity > 0)
                 {
-                    string messagePitch = ExtractValue(message);
-                    int midiNote = NAudioPitchToMidi(messagePitch);
-                    pushedPitches.Add(midiNote);
+                    // Biztosítjuk, hogy ne kerüljön be duplán
+                    if (!pushedPitches.Contains(midiNote))
+                    {
+                        pushedPitches.Add(midiNote);
+                    }
                 }
+                // Ha a Velocity 0, az a billentyű Felengedését jelenti
                 else
                 {
-                    string messagePitch = ExtractValue(message);
-                    int midiNote = NAudioPitchToMidi(messagePitch);
                     pushedPitches.Remove(midiNote);
                 }
+            }
+            // Kezeljük a dedikált NoteOff eseményt is (eszköze válogatja, melyiket küldi)
+            else if (e.MidiEvent is NAudio.Midi.NoteEvent noteOff && e.MidiEvent.CommandCode == MidiCommandCode.NoteOff)
+            {
+                pushedPitches.Remove(noteOff.NoteNumber);
             }
         }
 
@@ -510,7 +602,7 @@ namespace Melody.UI
         {
             string step = pitch.Remove(pitch.Length - 1, 1);
             int octave = int.Parse(pitch.Substring(pitch.Length - 1, 1));
-            var midiNote = NAudioNote[step] + (12 * octave);
+            int midiNote = NAudioNote[step] + (12 * octave);
             return midiNote;
         }
 
@@ -551,16 +643,37 @@ namespace Melody.UI
             btn_startPractice.IsEnabled = true;
         }
 
-        private void PracticeWindow_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        private void PracticeWindow_Unloaded(object sender, RoutedEventArgs e)
         {
             CompositionTarget.Rendering -= UpdateFrame;
             //midiOut?.Dispose();
             isPianoRollInitialized = false;
             isPianoRollPlaying = false;
+            pushedPitches.Clear();
+            waitingPitches.Clear();
 
-            this.viewModel.ToggleLogic.ToggleView();
+            // 1. Kötelező leiratkozás, különben memóriaszivárgás lesz!
+            if (this.viewModel != null)
+            {
+                this.viewModel.PropertyChanged -= ViewModel_PropertyChanged;
+            }
 
-            viewModel.PracticeLogic.SaveProgress(currentMeasureIndex);
+            if (this.midiIn != null)
+            {
+                try
+                {
+                    this.midiIn.Stop();
+                    this.midiIn.Dispose();
+                }
+                catch { }
+                this.isMidiInAvailable = false;
+            }
+
+            //this.viewModel.ToggleLogic.ToggleView();
+            if (viewModel.PracticeLogic.Progress != null)
+            {
+                viewModel.PracticeLogic.SaveProgress(currentMeasureIndex);
+            }
         }
     }
 }

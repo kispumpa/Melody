@@ -1,46 +1,111 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.UI.ViewModels
 {
+    using System.ComponentModel;
+    using System.Runtime.CompilerServices;
+
+    /// <summary>Represents the base view model for a window.</summary>
     public class BaseWindowViewModel : INotifyPropertyChanged
     {
-        private object _currentView;
+        private object currentView;
 
+        /// <summary>Initializes a new instance of the <see cref="BaseWindowViewModel"/> class.</summary>
+        public BaseWindowViewModel()
+        {
+            this.MenuWindowVM = new MenuWindowViewModel();
+            this.MenuWindowVM.NavigationRequested += OnMenuNavigationRequested;
+
+            this.CurrentView = this.MenuWindowVM;
+        }
+
+        /// <summary>Occurs when a property value changes.</summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        /// <summary>Gets or sets the current view.</summary>
         public object CurrentView
         {
-            get => _currentView;
+            get => this.currentView;
             set
             {
-                _currentView = value;
-                OnPropertyChanged();
+                this.currentView = value;
+                this.OnPropertyChanged();
+                this.OnPropertyChanged(nameof(WindowTitle));
             }
         }
 
-
-        public MenuWindowViewModel MenuWindowVM { get; set; }
-        public MainWindowViewModel MainWindowVM { get; set; }
-
-        public BaseWindowViewModel()
+        public string WindowTitle
         {
-            // Induláskor a menüt mutatjuk
-            MenuWindowVM = new MenuWindowViewModel();
-
-            CurrentView = MenuWindowVM;
+            get => this.CurrentView switch
+            {
+                MenuWindowViewModel => "Melody - Menu",
+                MainWindowViewModel => "Melody - Player",
+                PracticeWindowViewModel => "Melody - Practice",
+                _ => "Melody"
+            };
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        /// <summary>Gets or sets the menu window view model.</summary>
+        public MenuWindowViewModel MenuWindowVM { get; set; }
 
+        /// <summary>Gets or sets the main window view model.</summary>
+        public MainWindowViewModel MainWindowVM { get; set; }
+
+        public PracticeWindowViewModel PracticeWindowVM { get; set; }
+
+        // Ide majd bekerülhet a SettingsViewModel is
+        // public SettingsViewModel SettingsVM { get; set; }
+
+        /// <summary>Raises the <see cref="PropertyChanged"/> event.</summary>
+        /// <param name="propertyName">The name of the property that changed.</param>
         protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
         {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void OnMenuNavigationRequested(object sender, string viewName)
+        {
+            switch (viewName)
+            {
+                case "Practice":
+                    this.PracticeWindowVM = new PracticeWindowViewModel();
+                    this.PracticeWindowVM.NavigationRequested += OnChildNavigationRequested;
+
+                    this.CurrentView = this.PracticeWindowVM;
+                    break;
+                case "Player":
+                    this.MainWindowVM = new MainWindowViewModel();
+                    this.MainWindowVM.NavigationRequested += OnChildNavigationRequested;
+
+                    this.CurrentView = this.MainWindowVM;
+                    break;
+
+                case "Settings":
+                    // Ha lesz SettingsViewModel, azt is itt állítod be
+                    // if (this.SettingsVM == null) { this.SettingsVM = new SettingsViewModel(); }
+                    // this.CurrentView = this.SettingsVM;
+                    break;
+            }
+        }
+
+        private void OnChildNavigationRequested(object sender, string viewName)
+        {
+            if (viewName == "Menu")
+            {
+                if (this.MainWindowVM != null)
+                {
+                    this.MainWindowVM.NavigationRequested -= OnChildNavigationRequested;
+                    this.MainWindowVM = null;
+                }
+
+                if (this.PracticeWindowVM != null)
+                {
+                    this.PracticeWindowVM.NavigationRequested -= OnChildNavigationRequested;
+                    this.PracticeWindowVM = null;
+                }
+
+                this.CurrentView = this.MenuWindowVM;
+            }
         }
     }
 }

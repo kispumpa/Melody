@@ -23,6 +23,8 @@ namespace Melody.Logic
         private int totalVisibleNotes;
         private DateTime startTime;
 
+        /// <summary>Initializes a new instance of the <see cref="PianorollLogic"/> class.</summary>
+        /// <param name="messenger">The messenger instance.</param>
         public PianorollLogic(IMessenger messenger)
         {
             this.messenger = messenger;
@@ -31,26 +33,33 @@ namespace Melody.Logic
             this.PracticeNotes = new Dictionary<double, List<Models.Note>>();
         }
 
+        /// <inheritdoc/>
         public List<Models.Note> LoadedNotes { get; private set; }
 
+        /// <inheritdoc/>
         public Dictionary<double, List<Models.Note>> PracticeNotes { get; private set; }
 
+        /// <inheritdoc/>
         public int TotalVisibleNotes
         {
             get => this.totalVisibleNotes;
             set => this.totalVisibleNotes = value;
         }
 
+        /// <inheritdoc/>
         public int MinOctave
         {
             get => this.minOctave;
             set => this.minOctave = value;
         }
 
+        /// <inheritdoc/>
         public int MaxOctave => this.maxOctave;
 
+        /// <inheritdoc/>
         public DateTime StartTime => this.startTime;
 
+        /// <inheritdoc/>
         public void InitializePianoRoll(string path)
         {
             try
@@ -71,6 +80,7 @@ namespace Melody.Logic
             }
         }
 
+        /// <inheritdoc/>
         public void StoreNotes(double windowWidth, bool isPractice)
         {
             this.messenger.Send("Storing notes for piano roll...", "PianorollLoadResult");
@@ -85,9 +95,9 @@ namespace Melody.Logic
             int measureCount = -1;
             bool isRightHand = true;
 
-            foreach (var part in this.score.Parts)
+            foreach (Part part in this.score.Parts)
             {
-                foreach (var measure in part.Measures)
+                foreach (MusicXml.Domain.Measure measure in part.Measures)
                 {
                     if (measure.Attributes != null && measure.Attributes.Divisions != 0)
                     {
@@ -101,7 +111,7 @@ namespace Melody.Logic
                         this.messenger.Send($"Processing measure no. {measureCount}...", "PracticeLoadResult");
                     }
 
-                    foreach (var element in measure.MeasureElements)
+                    foreach (MeasureElement element in measure.MeasureElements)
                     {
                         if (element.Type != MeasureElementType.Note)
                         {
@@ -119,7 +129,7 @@ namespace Melody.Logic
                             continue;
                         }
 
-                        var noteObj = (MusicXml.Domain.Note)element.Element;
+                        MusicXml.Domain.Note noteObj = (MusicXml.Domain.Note)element.Element;
 
                         if (noteObj.IsGrace)
                         {
@@ -134,18 +144,19 @@ namespace Melody.Logic
                             continue;
                         }
 
+                        string step = noteObj.Pitch.Step.ToString();
                         string temPitch = $"{((noteObj.Pitch.Alter != 0)
-                            ? (MusicNote)(((int)(MusicNote)Enum.Parse(typeof(MusicNote), noteObj.Pitch.Step.ToString()) + noteObj.Pitch.Alter) % 12)
-                            : (MusicNote)Enum.Parse(typeof(MusicNote), noteObj.Pitch.Step.ToString()))}{noteObj.Pitch.Octave}";
+                            ? (MusicNote)(((int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + noteObj.Pitch.Alter) % 12)
+                            : (MusicNote)Enum.Parse(typeof(MusicNote), step))}{noteObj.Pitch.Octave}";
 
-                        double index = (int)(Step)Enum.Parse(typeof(Step), noteObj.Pitch.Step.ToString()) + (7 * noteObj.Pitch.Octave) - (temPitch.Contains("b") ? 0.5 : 0) - this.minIndex;
+                        double index = (int)(Step)Enum.Parse(typeof(Step), step) + (7 * noteObj.Pitch.Octave) + CheckAlter(temPitch, 0.5, 0, true, noteObj.Pitch.Alter) - this.minIndex;
 
-                        var note = new Models.Note
+                        Models.Note note = new Models.Note
                         {
                             X = new Accordinate
                             {
                                 Position = (windowWidth / this.TotalVisibleNotes) * index,
-                                Length = windowWidth / this.TotalVisibleNotes / (temPitch.Contains("b") ? 2 : 1),
+                                Length = windowWidth / this.TotalVisibleNotes / CheckAlter(temPitch, 2, 1),
                             },
                             Y = new Accordinate
                             {
@@ -180,14 +191,29 @@ namespace Melody.Logic
             }
 
             this.messenger.Send("Notes stored successfully for piano roll.", "PianorollLoadResult");
-
         }
 
+        private double CheckAlter(string temPitch, double good, double bad, bool index = false, int alter = 0)
+        {
+            if (temPitch.Contains("b") && !temPitch.Contains("Cb") && !temPitch.Contains("Fb"))
+            {
+                return alter == 0 ? good : good * alter;
+            }
+
+            if (temPitch.Contains("Cb") && temPitch.Contains("Fb") && index)
+            {
+                return 1;
+            }
+
+            return bad;
+        }
+
+        /// <inheritdoc/>
         public void UpdateNotePositions(double canvasHeight)
         {
             double elapsed = (DateTime.Now - this.startTime).TotalSeconds * PlaybackSpeed;
 
-            foreach (var note in this.LoadedNotes)
+            foreach (Models.Note note in this.LoadedNotes)
             {
                 double y = note.Y.Position - (elapsed * PixelsPerSecond);
 
@@ -202,20 +228,26 @@ namespace Melody.Logic
             }
         }
 
+        /// <inheritdoc/>
+        public void CreatePractice()
+        {
+            // PracticeNotes -> PracticeStucture.json
+        }
+
         private void GetOctaveInterval()
         {
             int maxOctave = 0;
             int minOctave = 10;
 
-            foreach (var part in this.score.Parts)
+            foreach (Part part in this.score.Parts)
             {
-                foreach (var measure in part.Measures)
+                foreach (MusicXml.Domain.Measure measure in part.Measures)
                 {
-                    foreach (var element in measure.MeasureElements)
+                    foreach (MeasureElement element in measure.MeasureElements)
                     {
                         if (element.Type == MeasureElementType.Note && !((MusicXml.Domain.Note)element.Element).IsRest)
                         {
-                            var noteOctave = ((MusicXml.Domain.Note)element.Element).Pitch.Octave;
+                            int noteOctave = ((MusicXml.Domain.Note)element.Element).Pitch.Octave;
                             if (noteOctave > maxOctave)
                             {
                                 maxOctave = noteOctave;
@@ -250,11 +282,6 @@ namespace Melody.Logic
 
             noteSum += (this.maxOctave - this.minOctave + 1) * 7;
             return noteSum;
-        }
-
-        public void CreatePractice()
-        {
-            // PracticeNotes -> PracticeStucture.json
         }
     }
 }

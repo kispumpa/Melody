@@ -1,19 +1,19 @@
-﻿using Melody.Logic.Models;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.Logic
 {
+    using System.Diagnostics;
+    using System.Text.Json;
+    using Melody.Logic.Models;
+
+    /// <summary>Provides methods for managing files related to the Melody application.</summary>
     public static class FileController
     {
-        private static string AppName = "Melody";
-        public static string FileName = "sheetCollections.json";
+        private static string appName = "Melody";
+        public static string fileName = "sheetCollections.json";
 
+        /// <summary>Gets the path to the collection file.</summary>
+        /// <returns>The path to the collection file.</returns>
         public static string GetCollectionPath()
         {
             string folderPath = GetAppDataPath();
@@ -23,31 +23,26 @@ namespace Melody.Logic
                 Directory.CreateDirectory(folderPath);
             }
 
-            var colPath = Path.Combine(folderPath, FileName);
+            string colPath = Path.Combine(folderPath, fileName);
 
             if (!File.Exists(colPath))
             {
                 SheetCollection coll = new SheetCollection
                 {
-                    Sheets = new Dictionary<string, string>()
+                    Sheets = new Dictionary<string, string>(),
                 };
                 string json = JsonSerializer.Serialize(coll, new JsonSerializerOptions
                 {
-                    WriteIndented = true
+                    WriteIndented = true,
                 });
-                Save(json, FileName);
+                Save(json, fileName);
             }
 
-            return Path.Combine(folderPath, FileName);
+            return Path.Combine(folderPath, fileName);
         }
 
-        private static string GetAppDataPath()
-        {
-            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-            string folderPath = Path.Combine(appData, AppName);
-            return folderPath;
-        }
-
+        /// <summary>Gets the sheet collection.</summary>
+        /// <returns>The sheet collection.</returns>
         public static SheetCollection GetCollection()
         {
             string sheetCollectionJson = File.ReadAllText(GetCollectionPath());
@@ -57,6 +52,9 @@ namespace Melody.Logic
             return collection;
         }
 
+        /// <summary>Saves the specified data to a file.</summary>
+        /// <param name="data">The data to save.</param>
+        /// <param name="name">The name of the file.</param>
         public static void Save(string data, string name)
         {
             string appDataPath = GetAppDataPath();
@@ -67,12 +65,14 @@ namespace Melody.Logic
             Debug.WriteLine($"File saved here: {goalPath}");
         }
 
+        /// <summary>Loads the specified practice logic from files.</summary>
+        /// <param name="logic">The practice logic to load.</param>
         public static void Load(PracticeLogic logic)
         {
-            var practiceNotesPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_notes.json");
-            var structurePath = Path.Combine(GetAppDataPath(), $"{logic.Key}_structure.json");
-            var measureListPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_measureList.json");
-            var progressPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_progress.json");
+            string practiceNotesPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_notes.json");
+            string structurePath = Path.Combine(GetAppDataPath(), $"{logic.Key}_structure.json");
+            string measureListPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_measureList.json");
+            string progressPath = Path.Combine(GetAppDataPath(), $"{logic.Key}_progress.json");
 
             string practiceNotes = File.ReadAllText($"{practiceNotesPath}");
             string structure = File.ReadAllText($"{structurePath}");
@@ -83,6 +83,13 @@ namespace Melody.Logic
             logic.Structure = JsonSerializer.Deserialize<PracticeStructure>(structure);
             logic.MeasureList = JsonSerializer.Deserialize<MeasureList>(measureList);
             logic.Progress = JsonSerializer.Deserialize<Progress>(progress);
+        }
+
+        private static string GetAppDataPath()
+        {
+            string appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string folderPath = Path.Combine(appData, appName);
+            return folderPath;
         }
     }
 }

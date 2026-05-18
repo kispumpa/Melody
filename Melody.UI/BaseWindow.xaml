@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Melody.UI"
         mc:Ignorable="d"
-        Title="BaseWindow" WindowState="Maximized">
+        Title="{Binding WindowTitle}" WindowState="Maximized">
     <Grid>
         <ContentControl Content="{Binding CurrentView}" />
     </Grid>

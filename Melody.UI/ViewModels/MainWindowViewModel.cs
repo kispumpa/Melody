@@ -31,6 +31,9 @@ namespace Melody.UI.ViewModels
         private ObservableCollection<string> midiDevices;
         private int selectedMidiDeviceIndex;
 
+        private bool isLoading = false;
+        private ObservableCollection<string> loadingMessages;
+
         public MainWindowViewModel()
             : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>(), Ioc.Default.GetService<IPianorollLogic>(), Ioc.Default.GetService<IMxlUnpacker>())
         {
@@ -46,6 +49,7 @@ namespace Melody.UI.ViewModels
             this.mxlUnpacker = mxlUnpacker;
             isPianorollLoaded = false;
             isImageLoaded = false;
+            loadingMessages = new ObservableCollection<string>();
 
             imagePaths = new ObservableCollection<string>();
             InitializeMidiDevices();
@@ -60,41 +64,90 @@ namespace Melody.UI.ViewModels
 
             Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
             {
-                if (msg.Contains("successfully"))
+                Application.Current.Dispatcher.Invoke(() =>
                 {
-                    isImageLoaded = true;
-                    UpdateImagePaths();
-                }
-                OnPropertyChanged(nameof(IsImageLoaded));
+                    if (msg.Contains("successfully"))
+                    {
+                        recipient.IsImageLoaded = true;
+                        recipient.UpdateImagePaths();
+                    }
+
+                    recipient.OnPropertyChanged(nameof(IsImageLoaded));
+
+                    recipient.LoadingMessages.Add($"[Sheet]: {msg}");
+                });
                 Debug.WriteLine(msg);
             });
 
             Messenger.Register<MainWindowViewModel, string, string>(this, "PianorollLoadResult", (recipient, msg) =>
             {
+                Application.Current.Dispatcher.Invoke(() =>
+                {
+                    recipient.LoadingMessages.Add($"[PianoRoll]: {msg}");
+                });
+
                 Debug.WriteLine(msg);
             });
 
             ToggleViewCommand = new RelayCommand(() => this.toggleLogic.ToggleView());
 
-            LoadSheetCommand = new RelayCommand(() =>
+            LoadSheetCommand = new AsyncRelayCommand(LoadSheetAsync);
+
+            GoHomeCommand = new RelayCommand(() => NavigationRequested?.Invoke(this, "Menu"));
+        }
+
+        private async Task LoadSheetAsync()
+        {
+            if (openFileDialog.ShowDialog() == true)
             {
-                if (openFileDialog.ShowDialog() == true)
+                string filePath = openFileDialog.FileName;
+
+                IsLoading = true;
+                LoadingMessages.Clear();
+
+                //Messenger.Send("Fájl betöltése megkezdődött...", "LogMessage");
+
+                IsPianorollLoaded = false;
+                IsImageLoaded = false;
+                try
                 {
-                    string filePath = openFileDialog.FileName;
-                    this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
-                    this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
-                    this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
+                    // A nehéz munka áthelyezése a háttérszálra!
+                    await Task.Run(() =>
+                    {
+                        //Messenger.Send("MusicXML kicsomagolása...", "LogMessage");
+                        this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
+
+                        //Messenger.Send("Kották generálása Lilypond segítségével...", "LogMessage");
+                        this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
+
+                        //Messenger.Send("Zongoratekercs inicializálása...", "LogMessage");
+                        this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
+                    });
+
                     IsPianorollLoaded = true;
                     IsImageLoaded = true;
+
+                    //Messenger.Send("Sikeresen befejeződött!", "LogMessage");
+
+                    await Task.Delay(1000);
                 }
-            });
+                catch (System.Exception ex)
+                {
+                    //Messenger.Send($"Hiba történt: {ex.Message}", "LogMessage");
+                    await Task.Delay(3000); // Hibánál hagyjuk kint tovább
+                }
+                finally
+                {
+                    IsLoading = false;
+                }
+            }
         }
 
         public static bool IsInDesignMode
         {
             get
             {
-                var prop = DesignerProperties.IsInDesignModeProperty;
+                DependencyProperty prop = DesignerProperties.IsInDesignModeProperty;
                 return (bool)DependencyPropertyDescriptor.FromProperty(prop, typeof(FrameworkElement)).Metadata.DefaultValue;
             }
         }
@@ -104,6 +157,10 @@ namespace Melody.UI.ViewModels
 
         public ICommand LoadSheetCommand { get; set; }
 
+        public ICommand GoHomeCommand { get; set; }
+
+        public event EventHandler<string> NavigationRequested;
+
         // Logic
         public IPianorollLogic PianorollLogic => pianorollLogic;
 
@@ -111,6 +168,18 @@ namespace Melody.UI.ViewModels
         public bool IsPianoRollView => toggleLogic.IsPianoRollView;
 
         public bool IsSheetMusicView => !toggleLogic.IsPianoRollView;
+
+        public bool IsLoading
+        {
+            get => isLoading;
+            set => SetProperty(ref isLoading, value);
+        }
+
+        public ObservableCollection<string> LoadingMessages
+        {
+            get => loadingMessages;
+            set => SetProperty(ref loadingMessages, value);
+        }
 
         public bool IsImageLoaded
         {
@@ -154,7 +223,7 @@ namespace Melody.UI.ViewModels
         private void UpdateImagePaths()
         {
             imagePaths.Clear();
-            foreach (var path in lilypondLogic.GeneratedPngPaths)
+            foreach (string path in lilypondLogic.GeneratedPngPaths)
             {
                 imagePaths.Add(path);
             }

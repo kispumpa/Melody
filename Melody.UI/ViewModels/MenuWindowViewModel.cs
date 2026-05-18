@@ -1,60 +1,67 @@
-﻿using CommunityToolkit.Mvvm.Input;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Input;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.UI.ViewModels
 {
+    using System.ComponentModel;
+    using System.Runtime.CompilerServices;
+    using System.Windows.Input;
+    using CommunityToolkit.Mvvm.Input;
+
+    /// <summary>ViewModel for the menu window.</summary>
     public class MenuWindowViewModel : INotifyPropertyChanged
     {
-        public ICommand StartPracticeCommand { get; }
-
-        public ICommand PlayerCommand { get; set; }
-
-        public ICommand SettingsCommand { get; }
-
-        public ICommand ExitCommand { get; }
-
+        /// <summary>Initializes a new instance of the <see cref="MenuWindowViewModel"/> class.</summary>
         public MenuWindowViewModel()
         {
-            StartPracticeCommand = new RelayCommand(OnStartPractice);
-            PlayerCommand = new RelayCommand(OnPlayer);
-            SettingsCommand = new RelayCommand(OnSettings);
-            ExitCommand = new RelayCommand(OnExit);
+            this.StartPracticeCommand = new RelayCommand(this.OnStartPractice);
+            this.PlayerCommand = new RelayCommand(this.OnPlayer);
+            this.SettingsCommand = new RelayCommand(this.OnSettings);
+            this.ExitCommand = new RelayCommand(this.OnExit);
+        }
+
+        /// <summary>Occurs when a property value changes.</summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        public event EventHandler<string> NavigationRequested;
+
+        /// <summary>Gets the command to start practice.</summary>
+        public ICommand StartPracticeCommand { get; }
+
+        /// <summary>Gets or sets the command to open the player.</summary>
+        public ICommand PlayerCommand { get; set; }
+
+        /// <summary>Gets the command to open the settings.</summary>
+        public ICommand SettingsCommand { get; }
+
+        /// <summary>Gets the command to exit the application.</summary>
+        public ICommand ExitCommand { get; }
+
+        /// <summary>Raises the <see cref="PropertyChanged"/> event.</summary>
+        /// <param name="propertyName">The name of the property that changed.</param>
+        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
 
         private void OnStartPractice()
         {
-            var practiceWind = new PracticeWindow();
-            practiceWind.Show();
-        }
-
-        private void OnSettings()
-        {
-            // Beállítások megnyitása
+            NavigationRequested?.Invoke(this, "Practice");
         }
 
         private void OnPlayer()
         {
-            var mainWind = new MainWindow();
-            mainWind.Show();
+            NavigationRequested?.Invoke(this, "Player");
         }
+
+        private void OnSettings()
+        {
+            NavigationRequested?.Invoke(this, "Settings");
+        }
+
 
         private void OnExit()
         {
             System.Windows.Application.Current.Shutdown();
-        }
-
-        public event PropertyChangedEventHandler PropertyChanged;
-
-        protected void OnPropertyChanged([CallerMemberName] string propertyName = null)
-        {
-            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }
