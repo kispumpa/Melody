@@ -57,7 +57,6 @@ namespace Melody.UI.ViewModels
             this.Messenger.Register<PracticeWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
             {
                 this.OnPropertyChanged(nameof(this.IsPianoRollView));
-                this.OnPropertyChanged(nameof(this.IsButtonView));
                 Debug.WriteLine(msg);
             });
 
@@ -130,9 +129,6 @@ namespace Melody.UI.ViewModels
 
         /// <summary>Gets a value indicating whether the piano roll view is active.</summary>
         public bool IsPianoRollView => this.toggleLogic.IsPianoRollView;
-
-        /// <summary>Gets a value indicating whether the button view is active.</summary>
-        public bool IsButtonView => !this.toggleLogic.IsPianoRollView;
 
         /// <summary>Gets the pianoroll logic component.</summary>
         public IPianorollLogic PianorollLogic => this.pianorollLogic;

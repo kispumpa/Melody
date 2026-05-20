@@ -36,8 +36,7 @@
                 <TextBlock Text="Let's practice!" FontSize="30" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                 <TextBlock Text="At first, connect the piano through the USB." FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                 <TextBlock x:Name="midiConnectionDisplay" Text="Waiting for piano signal..." FontSize="20" FontWeight="Bold" Foreground="#E74C3C" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center" 
-                    Visibility="{Binding IsButtonView, Converter={StaticResource BoolToVisibilityConverter}}">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                     <Button x:Name="btn_createPractice" Content="Create Practice" IsEnabled="False" FontSize="20" HorizontalAlignment="Left" Command="{Binding CreateSheetCommand}" Margin="20,0" Height="66" Width="200" Background="Yellow" Cursor="Hand">
                         <Button.Effect>
                             <DropShadowEffect/>
