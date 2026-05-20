@@ -55,6 +55,8 @@ namespace Melody.UI.ViewModels
         /// <summary>Gets or sets the practice window view model.</summary>
         public PracticeWindowViewModel PracticeWindowVM { get; set; }
 
+        public SettingsWindowViewModel SettingsWindowVM { get; set; }
+
         // Ide majd bekerülhet a SettingsViewModel is
         // public SettingsViewModel SettingsVM { get; set; }
 
@@ -83,9 +85,10 @@ namespace Melody.UI.ViewModels
                     break;
 
                 case "Settings":
-                    // Ha lesz SettingsViewModel, azt is itt állítod be
-                    // if (this.SettingsVM == null) { this.SettingsVM = new SettingsViewModel(); }
-                    // this.CurrentView = this.SettingsVM;
+                    this.SettingsWindowVM = new SettingsWindowViewModel();
+                    this.SettingsWindowVM.NavigationRequested += this.OnChildNavigationRequested;
+
+                    this.CurrentView = this.SettingsWindowVM;
                     break;
             }
         }
@@ -104,6 +107,12 @@ namespace Melody.UI.ViewModels
                 {
                     this.PracticeWindowVM.NavigationRequested -= this.OnChildNavigationRequested;
                     this.PracticeWindowVM = null;
+                }
+
+                if (this.SettingsWindowVM != null)
+                {
+                    this.SettingsWindowVM.NavigationRequested -= this.OnChildNavigationRequested;
+                    this.SettingsWindowVM = null;
                 }
 
                 this.CurrentView = this.MenuWindowVM;

@@ -14,5 +14,11 @@
         <DataTemplate DataType="{x:Type vms:PracticeWindowViewModel}">
             <local:PracticeWindow />
         </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:SettingsWindowViewModel}">
+            <local:SettingsWindow />
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type vms:BaseWindowViewModel}">
+            <local:BaseWindow />
+        </DataTemplate>
     </Application.Resources>
 </Application>
