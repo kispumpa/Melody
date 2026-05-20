@@ -81,7 +81,22 @@ namespace Melody.Logic
                     updatedContent = updatedContent.Replace("\\layout {", "    }" + Environment.NewLine + "    \\layout {");
                 }
 
-                updatedContent = updatedContent.Replace("\\context { \\Score", "\\context { \\Score" + Environment.NewLine + "        proportionalNotationDuration = #(ly:make-moment 1/32)"); // TODO: fixme
+                string strictProportional = @"
+    \context {
+      \Score
+      proportionalNotationDuration = #(ly:make-moment 1/16)
+      
+      % Szigorú arányosság kikényszerítése
+      \override SpacingSpanner.strict-note-spacing = ##t
+      \override SpacingSpanner.strict-grace-spacing = ##t
+      \override SpacingSpanner.uniform-stretching = ##t
+      
+      % Felesleges extra helyek eltávolítása az ütemvonalak körül
+      \override SpacingSpanner.base-shortest-duration = #(ly:make-moment 1/16)
+    }
+";
+
+                updatedContent = updatedContent.Replace("\\context { \\Score", strictProportional);
 
                 File.WriteAllText(lyFilePath, updatedContent);
 

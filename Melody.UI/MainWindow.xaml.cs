@@ -5,7 +5,6 @@ namespace Melody.UI
     using System.Diagnostics;
     using System.Windows;
     using System.Windows.Controls;
-    using System.Windows.Interop;
     using System.Windows.Media;
     using System.Windows.Media.Imaging;
     using System.Windows.Shapes;
@@ -41,12 +40,12 @@ namespace Melody.UI
         private MidiOut midiOut;
 
         private DispatcherTimer timer;
-        private double speed = 1;
+        private double speed = 4.5;
 
         /// <summary>Initializes a new instance of the <see cref="MainWindow"/> class.</summary>
         public MainWindow()
         {
-            RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
+            //RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
             this.InitializeComponent();
 
             this.noteRectangles = new Dictionary<Note, Rectangle>();
@@ -425,8 +424,14 @@ namespace Melody.UI
 
         private void UpdateSheetMusicFrame()
         {
-            Debug.WriteLine($"Updating sheet music frame: {this.ImageTransform.X}");
-            this.ImageTransform.X -= this.speed;
+            double elapsed = (DateTime.Now - this.pianoRollStartTime).TotalSeconds * PlaybackSpeed;
+
+            // A sebességed (pixel / másodperc). A 4.5/képkocka nagyjából 270 pixel/másodpercnek felel meg.
+            // Ezt a számot kell növelned/csökkentened a tökéletes sebességhez!
+
+
+            // Az új X pozíció: Kezdőpont (300) mínusz (eltelt idő * sebesség)
+            this.ImageTransform.X = 300 - (elapsed * (PixelsPerSecond + 4));
         }
 
         private void UpdateTimeDisplay(double currentTime)
