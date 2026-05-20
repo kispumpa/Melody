@@ -1,14 +1,20 @@
 ﻿// Copyright (c) Matula Márton. All rights reserved.
 
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
-using System.Windows.Input;
-
 namespace Melody.UI.ViewModels
 {
+    using System.Collections.ObjectModel;
+    using System.Windows.Input;
+    using CommunityToolkit.Mvvm.ComponentModel;
+    using CommunityToolkit.Mvvm.Input;
+
+    /// <summary>ViewModel for the settings window.</summary>
     public class SettingsWindowViewModel : ObservableRecipient
     {
+        private bool isFullPianoWidth = false;
+        private bool isDynamicPianoWidth = true;
+        private string selectedTheme = "Default";
+
+        /// <summary>Initializes a new instance of the <see cref="SettingsWindowViewModel"/> class.</summary>
         public SettingsWindowViewModel()
         {
             this.GoHomeCommand = new RelayCommand(() => this.NavigationRequested?.Invoke(this, "Menu"));
@@ -17,47 +23,46 @@ namespace Melody.UI.ViewModels
         /// <summary>Occurs when navigation is requested.</summary>
         public event EventHandler<string> NavigationRequested;
 
+        /// <summary>Gets the available themes.</summary>
         public ObservableCollection<string> AvailableThemes { get; } = new ObservableCollection<string> { "Default", "Dark", "Light" };
 
-        private string selectedTheme = "Default";
-
+        /// <summary>Gets or sets the selected theme.</summary>
         public string SelectedTheme
         {
-            get => selectedTheme;
-            set => SetProperty(ref selectedTheme, value);
+            get => this.selectedTheme;
+            set => this.SetProperty(ref this.selectedTheme, value);
         }
 
-        private bool isFullPianoWidth = false;
-
+        /// <summary>Gets or sets a value indicating whether the piano is displayed at full width.</summary>
         public bool IsFullPianoWidth
         {
-            get => isFullPianoWidth;
+            get => this.isFullPianoWidth;
             set
             {
-                if (SetProperty(ref isFullPianoWidth, value))
+                if (this.SetProperty(ref this.isFullPianoWidth, value))
                 {
-                    IsDynamicPianoWidth = !value;
+                    this.IsDynamicPianoWidth = !value;
                 }
             }
         }
 
-        private bool isDynamicPianoWidth = true;
-
+        /// <summary>Gets or sets a value indicating whether the piano width is dynamic.</summary>
         public bool IsDynamicPianoWidth
         {
-            get => isDynamicPianoWidth;
+            get => this.isDynamicPianoWidth;
             set
             {
-                if (SetProperty(ref isDynamicPianoWidth, value))
+                if (this.SetProperty(ref this.isDynamicPianoWidth, value))
                 {
-                    IsFullPianoWidth = !value;
+                    this.IsFullPianoWidth = !value;
                 }
             }
         }
 
-        // Parancsok a gombokhoz
+        /// <summary>Gets the command to save the settings.</summary>
         public ICommand SaveSettingsCommand { get; }
 
+        /// <summary>Gets the command to navigate back to the home screen.</summary>
         public ICommand GoHomeCommand { get; }
     }
 }

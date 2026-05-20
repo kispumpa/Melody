@@ -55,6 +55,7 @@ namespace Melody.UI.ViewModels
         /// <summary>Gets or sets the practice window view model.</summary>
         public PracticeWindowViewModel PracticeWindowVM { get; set; }
 
+        /// <summary>Gets or sets the settings window view model.</summary>
         public SettingsWindowViewModel SettingsWindowVM { get; set; }
 
         // Ide majd bekerülhet a SettingsViewModel is

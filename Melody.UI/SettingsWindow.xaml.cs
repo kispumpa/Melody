@@ -7,9 +7,10 @@ namespace Melody.UI
     /// <summary>Settings window for the Melody application.</summary>
     public partial class SettingsWindow : UserControl
     {
+        /// <summary>Initializes a new instance of the <see cref="SettingsWindow"/> class.</summary>
         public SettingsWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
     }
 }
