@@ -38,6 +38,7 @@ namespace Melody.UI
         private MidiIn midiIn;
         private List<int> pushedPitches;
         private List<int> waitingPitches;
+        private DateTime waitStartTime;
         private Dictionary<string, int> nAudioNote = new Dictionary<string, int>
         {
             { "C", 0 },
@@ -329,6 +330,7 @@ namespace Melody.UI
                     int midiNote = this.PitchToMidi(note.Pitch);
                     this.waitingPitches.Add(midiNote);
                     this.isWaiting = true;
+                    this.waitStartTime = DateTime.Now;
                     note.Played = true;
                 }
             }
@@ -438,7 +440,6 @@ namespace Melody.UI
 
         private void UpdateFrame(object sender, EventArgs e)
         {
-            //if (isPianoRollInitialized && isPianoRollPlaying  && pianoRollCanvas != null)
             if (this.isPianoRollInitialized && this.isPianoRollPlaying && !this.isWaiting && this.pianoRollCanvas != null)
             {
                 this.UpdatePianoRollFrame();
@@ -466,13 +467,18 @@ namespace Melody.UI
 
         private void WaitingForMatch()
         {
-            bool egyezik = this.pushedPitches.Count == this.waitingPitches.Count &&
-               this.pushedPitches.OrderBy(x => x).SequenceEqual(this.waitingPitches.OrderBy(x => x));
-            if (egyezik && this.pushedPitches.Count != 0)
+            lock (this.pushedPitches)
             {
-                this.isWaiting = false;
-                this.waitingPitches.Clear();
-                this.pushedPitches.Clear();
+                bool egyezik = this.pushedPitches.Count == this.waitingPitches.Count &&
+               this.pushedPitches.OrderBy(x => x).SequenceEqual(this.waitingPitches.OrderBy(x => x));
+                if (egyezik && this.pushedPitches.Count != 0)
+                {
+                    this.isWaiting = false;
+                    TimeSpan waitDuration = DateTime.Now - this.waitStartTime;
+                    this.pianoRollStartTime = this.pianoRollStartTime.Add(waitDuration);
+                    this.waitingPitches.Clear();
+                    this.pushedPitches.Clear();
+                }
             }
         }
 
@@ -492,49 +498,25 @@ namespace Melody.UI
 
         private void MidiIn_MessageReceived(object? sender, MidiInMessageEventArgs e)
         {
-            //if (e.MidiEvent.CommandCode == MidiCommandCode.NoteOn)
-            //{
-            //    string message = e.MidiEvent.ToString();
-            //    if (message.Contains("Len"))
-            //    {
-            //        string messagePitch = ExtractValue(message);
-            //        int midiNote = NAudioPitchToMidi(messagePitch);
-            //        Debug.WriteLine($"Note on received: {messagePitch} (MIDI note {midiNote})");
-            //        pushedPitches.Add(midiNote);
-            //    }
-            //    else
-            //    {
-            //        string messagePitch = ExtractValue(message);
-            //        int midiNote = NAudioPitchToMidi(messagePitch);
-            //        pushedPitches.Remove(midiNote);
-            //    }
-            //}
-            // Ellenőrizzük, hogy ez egy NoteOn típusú esemény-e
-            if (e.MidiEvent is NAudio.Midi.NoteOnEvent noteOn)
+            if (e.MidiEvent is NAudio.Midi.NoteEvent noteEvent)
             {
-                int midiNote = noteOn.NoteNumber;
+                int midiNote = noteEvent.NoteNumber;
 
-                // Ha a Velocity nagyobb mint 0, akkor a billentyűt Lenyomták
-                if (noteOn.Velocity > 0)
+                lock (this.pushedPitches)
                 {
-                    // Biztosítjuk, hogy ne kerüljön be duplán
-                    if (!this.pushedPitches.Contains(midiNote))
+                    if (e.MidiEvent.CommandCode == MidiCommandCode.NoteOn && noteEvent.Velocity > 0)
                     {
-                        this.pushedPitches.Add(midiNote);
+                        if (!this.pushedPitches.Contains(midiNote))
+                        {
+                            this.pushedPitches.Add(midiNote);
+                        }
+                    }
+                    else if (e.MidiEvent.CommandCode == MidiCommandCode.NoteOff ||
+                            (e.MidiEvent.CommandCode == MidiCommandCode.NoteOn && noteEvent.Velocity == 0))
+                    {
+                        this.pushedPitches.Remove(midiNote);
                     }
                 }
-
-                // Ha a Velocity 0, az a billentyű Felengedését jelenti
-                else
-                {
-                    this.pushedPitches.Remove(midiNote);
-                }
-            }
-
-            // Kezeljük a dedikált NoteOff eseményt is (eszköze válogatja, melyiket küldi)
-            else if (e.MidiEvent is NAudio.Midi.NoteEvent noteOff && e.MidiEvent.CommandCode == MidiCommandCode.NoteOff)
-            {
-                this.pushedPitches.Remove(noteOff.NoteNumber);
             }
         }
 
@@ -600,7 +582,6 @@ namespace Melody.UI
         private void PracticeWindow_Unloaded(object sender, RoutedEventArgs e)
         {
             CompositionTarget.Rendering -= this.UpdateFrame;
-            //midiOut?.Dispose();
             this.isPianoRollInitialized = false;
             this.isPianoRollPlaying = false;
             this.pushedPitches.Clear();
