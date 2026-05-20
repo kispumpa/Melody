@@ -1,18 +1,19 @@
 ﻿// Copyright (c) Matula Márton. All rights reserved.
 
-using System.Collections.ObjectModel;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Windows;
-using System.Windows.Input;
-using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.DependencyInjection;
-using CommunityToolkit.Mvvm.Input;
-using Melody.Logic.Interfaces;
-using NAudio.Midi;
-
 namespace Melody.UI.ViewModels
 {
+    using System.Collections.ObjectModel;
+    using System.ComponentModel;
+    using System.Diagnostics;
+    using System.Windows;
+    using System.Windows.Input;
+    using CommunityToolkit.Mvvm.ComponentModel;
+    using CommunityToolkit.Mvvm.DependencyInjection;
+    using CommunityToolkit.Mvvm.Input;
+    using Melody.Logic.Interfaces;
+    using NAudio.Midi;
+
+    /// <summary>Main window view model.</summary>
     public class MainWindowViewModel : ObservableRecipient
     {
         private readonly Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
@@ -34,35 +35,41 @@ namespace Melody.UI.ViewModels
         private bool isLoading = false;
         private ObservableCollection<string> loadingMessages;
 
+        /// <summary>Initializes a new instance of the <see cref="MainWindowViewModel"/> class.</summary>
         public MainWindowViewModel()
             : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>(), Ioc.Default.GetService<IPianorollLogic>(), Ioc.Default.GetService<IMxlUnpacker>())
         {
         }
 
+        /// <summary>Initializes a new instance of the <see cref="MainWindowViewModel"/> class with the specified logic components.</summary>
+        /// <param name="toggleLogic">The toggle view logic.</param>
+        /// <param name="lilypondLogic">The Lilypond logic.</param>
+        /// <param name="pianorollLogic">The pianoroll logic.</param>
+        /// <param name="mxlUnpacker">The MXL unpacker.</param>
         public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic, IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker)
         {
-            IsActive = true;
+            this.IsActive = true;
 
             this.toggleLogic = toggleLogic;
             this.lilypondLogic = lilypondLogic;
             this.pianorollLogic = pianorollLogic;
             this.mxlUnpacker = mxlUnpacker;
-            isPianorollLoaded = false;
-            isImageLoaded = false;
-            loadingMessages = new ObservableCollection<string>();
+            this.isPianorollLoaded = false;
+            this.isImageLoaded = false;
+            this.loadingMessages = new ObservableCollection<string>();
 
-            imagePaths = new ObservableCollection<string>();
-            InitializeMidiDevices();
+            this.imagePaths = new ObservableCollection<string>();
+            this.InitializeMidiDevices();
 
-            Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
+            this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
             {
-                OnPropertyChanged(nameof(IsPianoRollView));
-                OnPropertyChanged(nameof(IsSheetMusicView));
-                OnPropertyChanged(nameof(ViewText));
+                this.OnPropertyChanged(nameof(this.IsPianoRollView));
+                this.OnPropertyChanged(nameof(this.IsSheetMusicView));
+                this.OnPropertyChanged(nameof(this.ViewText));
                 Debug.WriteLine(msg);
             });
 
-            Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
+            this.Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -72,14 +79,14 @@ namespace Melody.UI.ViewModels
                         recipient.UpdateImagePaths();
                     }
 
-                    recipient.OnPropertyChanged(nameof(IsImageLoaded));
+                    recipient.OnPropertyChanged(nameof(this.IsImageLoaded));
 
                     recipient.LoadingMessages.Add($"[Sheet]: {msg}");
                 });
                 Debug.WriteLine(msg);
             });
 
-            Messenger.Register<MainWindowViewModel, string, string>(this, "PianorollLoadResult", (recipient, msg) =>
+            this.Messenger.Register<MainWindowViewModel, string, string>(this, "PianorollLoadResult", (recipient, msg) =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -89,60 +96,17 @@ namespace Melody.UI.ViewModels
                 Debug.WriteLine(msg);
             });
 
-            ToggleViewCommand = new RelayCommand(() => this.toggleLogic.ToggleView());
+            this.ToggleViewCommand = new RelayCommand(() => this.toggleLogic.ToggleView());
 
-            LoadSheetCommand = new AsyncRelayCommand(LoadSheetAsync);
+            this.LoadSheetCommand = new AsyncRelayCommand(this.LoadSheetAsync);
 
-            GoHomeCommand = new RelayCommand(() => NavigationRequested?.Invoke(this, "Menu"));
+            this.GoHomeCommand = new RelayCommand(() => this.NavigationRequested?.Invoke(this, "Menu"));
         }
 
-        private async Task LoadSheetAsync()
-        {
-            if (openFileDialog.ShowDialog() == true)
-            {
-                string filePath = openFileDialog.FileName;
+        /// <summary>Occurs when navigation is requested.</summary>
+        public event EventHandler<string> NavigationRequested;
 
-                IsLoading = true;
-                LoadingMessages.Clear();
-
-                //Messenger.Send("Fájl betöltése megkezdődött...", "LogMessage");
-
-                IsPianorollLoaded = false;
-                IsImageLoaded = false;
-                try
-                {
-                    // A nehéz munka áthelyezése a háttérszálra!
-                    await Task.Run(() =>
-                    {
-                        //Messenger.Send("MusicXML kicsomagolása...", "LogMessage");
-                        this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
-
-                        //Messenger.Send("Kották generálása Lilypond segítségével...", "LogMessage");
-                        this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
-
-                        //Messenger.Send("Zongoratekercs inicializálása...", "LogMessage");
-                        this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
-                    });
-
-                    IsPianorollLoaded = true;
-                    IsImageLoaded = true;
-
-                    //Messenger.Send("Sikeresen befejeződött!", "LogMessage");
-
-                    await Task.Delay(1000);
-                }
-                catch (System.Exception ex)
-                {
-                    //Messenger.Send($"Hiba történt: {ex.Message}", "LogMessage");
-                    await Task.Delay(3000); // Hibánál hagyjuk kint tovább
-                }
-                finally
-                {
-                    IsLoading = false;
-                }
-            }
-        }
-
+        /// <summary>Gets a value indicating whether the application is in design mode.</summary>
         public static bool IsInDesignMode
         {
             get
@@ -152,80 +116,129 @@ namespace Melody.UI.ViewModels
             }
         }
 
-        // Commands
+        /// <summary>Gets or sets the command to toggle the view.</summary>
         public ICommand ToggleViewCommand { get; set; }
 
+        /// <summary>Gets or sets the command to load a sheet.</summary>
         public ICommand LoadSheetCommand { get; set; }
 
+        /// <summary>Gets or sets the command to navigate to the home view.</summary>
         public ICommand GoHomeCommand { get; set; }
 
-        public event EventHandler<string> NavigationRequested;
+        /// <summary>Gets the pianoroll logic.</summary>
+        public IPianorollLogic PianorollLogic => this.pianorollLogic;
 
-        // Logic
-        public IPianorollLogic PianorollLogic => pianorollLogic;
+        /// <summary>Gets a value indicating whether the piano roll view is active.</summary>
+        public bool IsPianoRollView => this.toggleLogic.IsPianoRollView;
 
-        // Properties
-        public bool IsPianoRollView => toggleLogic.IsPianoRollView;
+        /// <summary>Gets a value indicating whether the sheet music view is active.</summary>
+        public bool IsSheetMusicView => !this.toggleLogic.IsPianoRollView;
 
-        public bool IsSheetMusicView => !toggleLogic.IsPianoRollView;
-
+        /// <summary>Gets or sets a value indicating whether the application is loading.</summary>
         public bool IsLoading
         {
-            get => isLoading;
-            set => SetProperty(ref isLoading, value);
+            get => this.isLoading;
+            set => this.SetProperty(ref this.isLoading, value);
         }
 
+        /// <summary>Gets or sets the collection of loading messages.</summary>
         public ObservableCollection<string> LoadingMessages
         {
-            get => loadingMessages;
-            set => SetProperty(ref loadingMessages, value);
+            get => this.loadingMessages;
+            set => this.SetProperty(ref this.loadingMessages, value);
         }
 
+        /// <summary>Gets or sets a value indicating whether the image is loaded.</summary>
         public bool IsImageLoaded
         {
-            get => isImageLoaded;
-            set => SetProperty(ref isImageLoaded, value);
+            get => this.isImageLoaded; set => this.SetProperty(ref this.isImageLoaded, value);
         }
 
-        public string ViewText => toggleLogic.IsPianoRollView ? "Piano roll" : "Sheet music";
+        /// <summary>Gets the text representing the current view.</summary>
+        public string ViewText => this.toggleLogic.IsPianoRollView ? "Piano roll" : "Sheet music";
 
+        /// <summary>Gets or sets the collection of image paths.</summary>
         public ObservableCollection<string> ImagePaths
         {
-            get => imagePaths;
-            set => SetProperty(ref imagePaths, value);
+            get => this.imagePaths; set => this.SetProperty(ref this.imagePaths, value);
         }
 
+        /// <summary>Gets or sets a value indicating whether the piano roll is loaded.</summary>
         public bool IsPianorollLoaded
         {
-            get => isPianorollLoaded;
-            set => SetProperty(ref isPianorollLoaded, value);
+            get => this.isPianorollLoaded; set => this.SetProperty(ref this.isPianorollLoaded, value);
         }
 
-        public ObservableCollection<string> MidiDevices => midiDevices;
+        /// <summary>Gets the collection of available MIDI devices.</summary>
+        public ObservableCollection<string> MidiDevices => this.midiDevices;
 
+        /// <summary>Gets or sets the index of the selected MIDI device.</summary>
         public int SelectedMidiDeviceIndex
         {
-            get => selectedMidiDeviceIndex;
-            set => SetProperty(ref selectedMidiDeviceIndex, value);
+            get => this.selectedMidiDeviceIndex; set => this.SetProperty(ref this.selectedMidiDeviceIndex, value);
+        }
+
+        private async Task LoadSheetAsync()
+        {
+            if (this.openFileDialog.ShowDialog() == true)
+            {
+                string filePath = this.openFileDialog.FileName;
+
+                this.IsLoading = true;
+                this.LoadingMessages.Clear();
+
+                // Messenger.Send("Fájl betöltése megkezdődött...", "LogMessage");
+                this.IsPianorollLoaded = false;
+                this.IsImageLoaded = false;
+                try
+                {
+                    await Task.Run(() =>
+                    {
+                        // Messenger.Send("MusicXML kicsomagolása...", "LogMessage");
+                        this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
+
+                        // Messenger.Send("Kották generálása Lilypond segítségével...", "LogMessage");
+                        this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
+
+                        // Messenger.Send("Zongoratekercs inicializálása...", "LogMessage");
+                        this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
+                    });
+
+                    this.IsPianorollLoaded = true;
+                    this.IsImageLoaded = true;
+
+                    // Messenger.Send("Sikeresen befejeződött!", "LogMessage");
+                    await Task.Delay(1000);
+                }
+                catch (Exception)
+                {
+                    // Messenger.Send($"Hiba történt: {ex.Message}", "LogMessage");
+                    await Task.Delay(3000);
+                }
+                finally
+                {
+                    this.IsLoading = false;
+                }
+            }
         }
 
         private void InitializeMidiDevices()
         {
-            midiDevices = new ObservableCollection<string>();
+            this.midiDevices = new ObservableCollection<string>();
             for (int i = 0; i < MidiOut.NumberOfDevices; i++)
             {
-                midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
+                this.midiDevices.Add(MidiOut.DeviceInfo(i).ProductName);
             }
 
-            selectedMidiDeviceIndex = midiDevices.Count > 0 ? 0 : -1;
+            this.selectedMidiDeviceIndex = this.midiDevices.Count > 0 ? 0 : -1;
         }
 
         private void UpdateImagePaths()
         {
-            imagePaths.Clear();
-            foreach (string path in lilypondLogic.GeneratedPngPaths)
+            this.imagePaths.Clear();
+            foreach (string path in this.lilypondLogic.GeneratedPngPaths)
             {
-                imagePaths.Add(path);
+                this.imagePaths.Add(path);
             }
         }
     }

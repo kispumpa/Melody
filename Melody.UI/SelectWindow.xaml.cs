@@ -1,36 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.UI
 {
-    /// <summary>
-    /// Interaction logic for SelectWindow.xaml
-    /// </summary>
+    using System.Windows;
+    using System.Windows.Controls;
+
+    /// <summary>A window for selecting an item from a list of sheets.</summary>
     public partial class SelectWindow : Window
     {
-        public string SelectedKey { get; private set; }
-
+        /// <summary>Initializes a new instance of the <see cref="SelectWindow"/> class.</summary>
+        /// <param name="sheets">The dictionary of sheets to display.</param>
         public SelectWindow(Dictionary<string, string> sheets)
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
-            ItemListBox.ItemsSource = sheets;
+            this.ItemListBox.ItemsSource = sheets;
         }
+
+        /// <summary>Gets the key of the selected item.</summary>
+        public string SelectedKey { get; private set; }
 
         private void ItemListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            if (ItemListBox.SelectedItem is KeyValuePair<string, string> selectedItem)
+            if (this.ItemListBox.SelectedItem is KeyValuePair<string, string> selectedItem)
             {
                 this.SelectedKey = selectedItem.Key;
 

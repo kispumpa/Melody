@@ -15,13 +15,12 @@ namespace Melody.UI
     using Melody.UI.ViewModels;
     using NAudio.Midi;
 
+    /// <summary>Code behind for the MainWindow.xaml.</summary>
     public partial class MainWindow : UserControl
     {
-        // ===== KONSTANSOK =====
         private const double PixelsPerSecond = 60;
         private const double PlaybackSpeed = 1.0;
 
-        // ===== PIANO ROLL MEZŐK =====
         private Canvas pianoRollCanvas;
         private Canvas pianoKeysCanvas;
         private Dictionary<Note, Rectangle> noteRectangles;
@@ -31,7 +30,6 @@ namespace Melody.UI
         private DateTime pianoRollStartTime;
         private double canvasHeight;
 
-        // ===== SHEET MUSIC MEZŐK =====
         private bool isSheetMusicInitialized = false;
         private bool isSheetMusicPlaying = false;
         private DateTime sheetMusicStartTime;
@@ -39,14 +37,13 @@ namespace Melody.UI
         private double totalDuration = 0;
         private double totalSvgWidth = 0;
 
-        // ===== KÖZÖS MEZŐK =====
         private MainWindowViewModel viewModel;
         private MidiOut midiOut;
 
+        private DispatcherTimer timer;
+        private double speed = 1;
 
-        DispatcherTimer timer;
-        double speed = 1;
-
+        /// <summary>Initializes a new instance of the <see cref="MainWindow"/> class.</summary>
         public MainWindow()
         {
             RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
@@ -54,50 +51,25 @@ namespace Melody.UI
 
             this.noteRectangles = new Dictionary<Note, Rectangle>();
 
-            //this.viewModel = new MainWindowViewModel(
-            //    Ioc.Default.GetService<IToggleViewLogic>(),
-            //    Ioc.Default.GetService<ILilypondLogic>(),
-            //    Ioc.Default.GetService<IPianorollLogic>(),
-            //    Ioc.Default.GetService<IMxlUnpacker>());
-
-            //this.DataContext = this.viewModel;
-            this.DataContextChanged += MainWindow_DataContextChanged;
-            //this.viewModel.PropertyChanged += this.ViewModel_PropertyChanged;
-
-            // 60 FPS rendering loop
-            //CompositionTarget.Rendering += UpdateFrame;
+            this.DataContextChanged += this.MainWindow_DataContextChanged;
 
             this.Loaded += this.MainWindow_Loaded;
             this.Unloaded += this.MainWindow_Unloaded;
 
-            timer = new DispatcherTimer();
+            this.timer = new DispatcherTimer();
 
-            timer.Interval = TimeSpan.FromMilliseconds(16); // ~60 FPS
-
+            this.timer.Interval = TimeSpan.FromMilliseconds(16); // ~60 FPS
         }
 
         private void MainWindow_Loaded(object sender, RoutedEventArgs e)
         {
             Debug.WriteLine("MainWindow loaded!");
-            CompositionTarget.Rendering -= UpdateFrame;
-            CompositionTarget.Rendering += UpdateFrame;
+            CompositionTarget.Rendering -= this.UpdateFrame;
+            CompositionTarget.Rendering += this.UpdateFrame;
 
-            // MIDI eszköz inicializálás
             if (this.viewModel.SelectedMidiDeviceIndex >= 0)
             {
                 this.midiOut = new MidiOut(this.viewModel.SelectedMidiDeviceIndex);
-            }
-
-            if (this.viewModel.IsPianorollLoaded && !this.isPianoRollInitialized)
-            {
-                Debug.WriteLine("Restoring existing piano roll...");
-                InitializePianoRoll();
-            }
-
-            if (this.viewModel.IsImageLoaded && !this.isSheetMusicInitialized)
-            {
-                Debug.WriteLine("Restoring existing sheet music...");
-                InitializeSheetMusic();
             }
         }
 
@@ -110,17 +82,16 @@ namespace Melody.UI
             }
             else if (e.PropertyName == nameof(MainWindowViewModel.SelectedMidiDeviceIndex))
             {
-                // MIDI eszköz váltás
                 this.midiOut?.Dispose();
                 if (this.viewModel.SelectedMidiDeviceIndex >= 0)
                 {
                     this.midiOut = new MidiOut(this.viewModel.SelectedMidiDeviceIndex);
                 }
             }
-            else if (e.PropertyName == nameof(MainWindowViewModel.IsImageLoaded) && viewModel.IsImageLoaded)
+            else if (e.PropertyName == nameof(MainWindowViewModel.IsImageLoaded) && this.viewModel.IsImageLoaded)
             {
                 Debug.WriteLine("Loading sheet music...");
-                InitializeSheetMusic();
+                this.InitializeSheetMusic();
             }
         }
 
@@ -130,40 +101,27 @@ namespace Melody.UI
             {
                 this.viewModel = passedViewModel;
 
-                this.viewModel.PropertyChanged += ViewModel_PropertyChanged;
-
-                if (this.IsLoaded)
-                {
-                    if (this.viewModel.IsPianorollLoaded && !this.isPianoRollInitialized)
-                    {
-                        InitializePianoRoll();
-                    }
-
-                    if (this.viewModel.IsImageLoaded && !this.isSheetMusicInitialized)
-                    {
-                        InitializeSheetMusic();
-                    }
-                }
+                this.viewModel.PropertyChanged += this.ViewModel_PropertyChanged;
             }
         }
 
         // ==================== PIANO ROLL IMPLEMENTATION ====================
         private void InitializePianoRoll()
         {
-            if (isPianoRollInitialized)
+            if (this.isPianoRollInitialized)
             {
-                pianorollGrid.Children.Clear();
-                noteRectangles.Clear();
-                isPianoRollInitialized = false;
+                this.pianorollGrid.Children.Clear();
+                this.noteRectangles.Clear();
+                this.isPianoRollInitialized = false;
             }
 
             IPianorollLogic logic = this.viewModel.PianorollLogic;
 
-            pianoKeysCanvas = CreatePianoKeys(logic);
-            pianorollGrid.Children.Add(pianoKeysCanvas);
-            Grid.SetRow(pianoKeysCanvas, 1);
+            this.pianoKeysCanvas = this.CreatePianoKeys(logic);
+            this.pianorollGrid.Children.Add(this.pianoKeysCanvas);
+            Grid.SetRow(this.pianoKeysCanvas, 1);
 
-            pianoRollCanvas = new Canvas
+            this.pianoRollCanvas = new Canvas
             {
                 Background = new SolidColorBrush(Color.FromRgb(200, 230, 255)),
                 ClipToBounds = true,
@@ -172,20 +130,20 @@ namespace Melody.UI
             Grid.SetRow(this.pianoRollCanvas, 0);
 
             this.UpdateLayout();
-            canvasHeight = pianorollGrid.RowDefinitions[0].ActualHeight;
-            if (canvasHeight <= 0)
+            this.canvasHeight = this.pianorollGrid.RowDefinitions[0].ActualHeight;
+            if (this.canvasHeight <= 0)
             {
-                canvasHeight = 800;
-                Debug.WriteLine($"WARNING: Canvas height was 0, using {canvasHeight}");
+                this.canvasHeight = 800;
+                Debug.WriteLine($"WARNING: Canvas height was 0, using {this.canvasHeight}");
             }
 
             logic.StoreNotes(this.ActualWidth);
-            CreateNotesInCanvas(logic);
+            this.CreateNotesInCanvas(logic);
 
-            isPianoRollPlaying = false;
-            isPianoRollInitialized = true;
-            CalculateTotalDuration();
-            UpdateTimeDisplay(0);
+            this.isPianoRollPlaying = false;
+            this.isPianoRollInitialized = true;
+            this.CalculateTotalDuration();
+            this.UpdateTimeDisplay(0);
 
             Debug.WriteLine($"Piano roll loaded! Canvas height: {this.canvasHeight}, Notes: {logic.LoadedNotes.Count}");
         }
@@ -262,7 +220,7 @@ namespace Melody.UI
                     Fill = new SolidColorBrush(Color.FromRgb(255, 165, 0)),
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,
-                    Visibility = Visibility.Hidden
+                    Visibility = Visibility.Hidden,
                 };
 
                 Canvas.SetLeft(rect, note.X.Position);
@@ -278,14 +236,14 @@ namespace Melody.UI
         {
             try
             {
-                if (viewModel.ImagePaths == null || viewModel.ImagePaths.Count == 0)
+                if (this.viewModel.ImagePaths == null || this.viewModel.ImagePaths.Count == 0)
                 {
                     Debug.WriteLine("No PNG files loaded!");
                     return;
                 }
 
-                myPlaybackCursor.Y2 = this.sheetMusicGrid.ActualHeight;
-                myPlaybackCursor.Visibility = Visibility.Visible;
+                this.myPlaybackCursor.Y2 = this.sheetMusicGrid.ActualHeight;
+                this.myPlaybackCursor.Visibility = Visibility.Visible;
 
                 //ImageControl.Source = new BitmapImage(new Uri(viewModel.ImagePaths[0]));
 
@@ -297,28 +255,27 @@ namespace Melody.UI
                 //bitmap.EndInit();
 
                 //ImageControl.Source = bitmap;
-
                 BitmapImage bitmap = new BitmapImage();
 
                 // A FileShare.ReadWrite biztosítja, hogy ne fagyjon ki, ha valami még fogná a fájlt
-                using (System.IO.FileStream stream = new System.IO.FileStream(viewModel.ImagePaths[0], System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
+                using (System.IO.FileStream stream = new System.IO.FileStream(this.viewModel.ImagePaths[0], System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
                 {
                     bitmap.BeginInit();
-                    bitmap.CacheOption = BitmapCacheOption.OnLoad; // Amint betöltött, elengedi a memóriából a streamet
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.StreamSource = stream;
                     bitmap.EndInit();
                 }
 
                 bitmap.Freeze(); // Ez nagyon fontos a WPF-ben! Gyorsítja a renderelést és leválasztja a szálról.
 
-                ImageControl.Source = null;   // Biztos, ami biztos: töröljük a régi képet a felületről
-                ImageControl.Source = bitmap; // Rárakjuk a vadonatújat
+                this.ImageControl.Source = null;   // Biztos, ami biztos: töröljük a régi képet a felületről
+                this.ImageControl.Source = bitmap; // Rárakjuk a vadonatújat
 
-                CalculateTotalDuration();
-                ImageTransform.X = 300;
-                isSheetMusicInitialized = true;
+                this.CalculateTotalDuration();
+                this.ImageTransform.X = 300;
+                this.isSheetMusicInitialized = true;
 
-                Debug.WriteLine($"Sheet music initialized! {viewModel.ImagePaths.Count} PNG(s) loaded");
+                Debug.WriteLine($"Sheet music initialized! {this.viewModel.ImagePaths.Count} PNG(s) loaded");
             }
             catch (Exception ex)
             {
@@ -329,78 +286,78 @@ namespace Melody.UI
         // ==================== PLAYBACK CONTROLS ====================
         private void CalculateTotalDuration()
         {
-            IPianorollLogic logic = viewModel.PianorollLogic;
+            IPianorollLogic logic = this.viewModel.PianorollLogic;
 
             if (logic?.LoadedNotes != null && logic.LoadedNotes.Count > 0)
             {
-                totalDuration = logic.LoadedNotes.Max(n => n.Y.Position + n.Y.Length) / PixelsPerSecond;
+                this.totalDuration = logic.LoadedNotes.Max(n => n.Y.Position + n.Y.Length) / PixelsPerSecond;
             }
             else
             {
-                totalDuration = 60;
+                this.totalDuration = 60;
             }
 
-            UpdateTimeDisplay(0);
+            this.UpdateTimeDisplay(0);
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
-            if (!isSheetMusicInitialized && !isPianoRollInitialized)
+            if (!this.isSheetMusicInitialized && !this.isPianoRollInitialized)
             {
                 MessageBox.Show("Please load a file first!", "Info", MessageBoxButton.OK, MessageBoxImage.Information);
                 return;
             }
 
-            playButton.IsEnabled = false;
-            pauseButton.IsEnabled = true;
-            stopButton.IsEnabled = true;
+            this.playButton.IsEnabled = false;
+            this.pauseButton.IsEnabled = true;
+            this.stopButton.IsEnabled = true;
 
-            if (isPaused)
+            if (this.isPaused)
             {
-                pianoRollStartTime = pianoRollStartTime.Add(DateTime.Now - pauseTiem);
-                isPaused = false;
+                this.pianoRollStartTime = this.pianoRollStartTime.Add(DateTime.Now - this.pauseTiem);
+                this.isPaused = false;
             }
             else
             {
-                pianoRollStartTime = DateTime.Now;
-                sheetMusicStartTime = DateTime.Now;
+                this.pianoRollStartTime = DateTime.Now;
+                this.sheetMusicStartTime = DateTime.Now;
             }
 
-            isPianoRollPlaying = true;
-            isSheetMusicPlaying = true;
+            this.isPianoRollPlaying = true;
+            this.isSheetMusicPlaying = true;
 
-            myPlaybackCursor.Visibility = Visibility.Visible;
+            this.myPlaybackCursor.Visibility = Visibility.Visible;
 
-            //timer.Start();
+            // timer.Start();
         }
 
         private void PauseButton_Click(object sender, RoutedEventArgs e)
         {
-            isSheetMusicPlaying = false;
-            isPianoRollPlaying = false;
+            this.isSheetMusicPlaying = false;
+            this.isPianoRollPlaying = false;
 
-            playButton.IsEnabled = true;
-            pauseButton.IsEnabled = false;
-            stopButton.IsEnabled = true;
+            this.playButton.IsEnabled = true;
+            this.pauseButton.IsEnabled = false;
+            this.stopButton.IsEnabled = true;
 
-            isPaused = true;
-            pauseTiem = DateTime.Now;
+            this.isPaused = true;
+            this.pauseTiem = DateTime.Now;
 
             Debug.WriteLine("Playback paused");
         }
 
         private void StopButton_Click(object sender, RoutedEventArgs e)
         {
-            isSheetMusicPlaying = false;
-            isPianoRollPlaying = false;
+            this.isSheetMusicPlaying = false;
+            this.isPianoRollPlaying = false;
 
-            playButton.IsEnabled = true;
-            pauseButton.IsEnabled = false;
-            stopButton.IsEnabled = false;
+            this.playButton.IsEnabled = true;
+            this.pauseButton.IsEnabled = false;
+            this.stopButton.IsEnabled = false;
 
-            UpdateTimeDisplay(0);
+            this.UpdateTimeDisplay(0);
 
-            IPianorollLogic logic = viewModel.PianorollLogic;
+            IPianorollLogic logic = this.viewModel.PianorollLogic;
             if (logic?.LoadedNotes != null)
             {
                 foreach (Note note in logic.LoadedNotes)
@@ -409,13 +366,13 @@ namespace Melody.UI
                 }
             }
 
-            if (isPianoRollInitialized)
+            if (this.isPianoRollInitialized)
             {
-                pianoRollStartTime = DateTime.Now;
-                UpdatePianoRollFrame();
+                this.pianoRollStartTime = DateTime.Now;
+                this.UpdatePianoRollFrame();
             }
 
-            ImageTransform.X = 300;
+            this.ImageTransform.X = 300;
 
             Debug.WriteLine("Playback stopped");
         }
@@ -423,17 +380,17 @@ namespace Melody.UI
         // ==================== UPDATE LOOP ====================
         private void UpdateFrame(object sender, EventArgs e)
         {
-            if (isPianoRollInitialized && isPianoRollPlaying && pianoRollCanvas != null && isSheetMusicInitialized && isSheetMusicPlaying)
+            if (this.isPianoRollInitialized && this.isPianoRollPlaying && this.pianoRollCanvas != null && this.isSheetMusicInitialized && this.isSheetMusicPlaying)
             {
-                UpdatePianoRollFrame();
-                UpdateSheetMusicFrame();
-                UpdateTimeDisplay((DateTime.Now - pianoRollStartTime).TotalSeconds * PlaybackSpeed);
+                this.UpdatePianoRollFrame();
+                this.UpdateSheetMusicFrame();
+                this.UpdateTimeDisplay((DateTime.Now - this.pianoRollStartTime).TotalSeconds * PlaybackSpeed);
             }
         }
 
         private void UpdatePianoRollFrame()
         {
-            double elapsed = (DateTime.Now - pianoRollStartTime).TotalSeconds * PlaybackSpeed;
+            double elapsed = (DateTime.Now - this.pianoRollStartTime).TotalSeconds * PlaybackSpeed;
 
             foreach (KeyValuePair<Note, Rectangle> kvp in this.noteRectangles)
             {
@@ -441,7 +398,7 @@ namespace Melody.UI
                 Rectangle rect = kvp.Value;
 
                 double y = note.Y.Position - (elapsed * PixelsPerSecond);
-                bool isVisible = (y + note.Y.Length > 0) && (y < canvasHeight);
+                bool isVisible = (y + note.Y.Length > 0) && (y < this.canvasHeight);
 
                 if (isVisible)
                 {
@@ -460,25 +417,24 @@ namespace Melody.UI
                 }
             }
 
-            if (elapsed >= totalDuration)
+            if (elapsed >= this.totalDuration)
             {
-                StopButton_Click(null, null);
+                this.StopButton_Click(null, null);
             }
         }
 
         private void UpdateSheetMusicFrame()
         {
-            Debug.WriteLine($"Updating sheet music frame: {ImageTransform.X}");
-            ImageTransform.X -= speed;
-
+            Debug.WriteLine($"Updating sheet music frame: {this.ImageTransform.X}");
+            this.ImageTransform.X -= this.speed;
         }
 
         private void UpdateTimeDisplay(double currentTime)
         {
             TimeSpan current = TimeSpan.FromSeconds(currentTime);
-            TimeSpan total = TimeSpan.FromSeconds(totalDuration);
+            TimeSpan total = TimeSpan.FromSeconds(this.totalDuration);
 
-            timeDisplay.Text = $"{current:mm\\:ss} / {total:mm\\:ss}";
+            this.timeDisplay.Text = $"{current:mm\\:ss} / {total:mm\\:ss}";
         }
 
         // ==================== MIDI PLAYBACK ====================
@@ -491,8 +447,8 @@ namespace Melody.UI
 
             try
             {
-                int midiNote = PitchToMidi(pitch);
-                midiOut.Send(MidiMessage.StartNote(midiNote, 60, 1).RawData);
+                int midiNote = this.PitchToMidi(pitch);
+                this.midiOut.Send(MidiMessage.StartNote(midiNote, 60, 1).RawData);
 
                 int durationMs = (int)((durationPixels / PixelsPerSecond) * 1000);
 
@@ -518,11 +474,11 @@ namespace Melody.UI
         // ==================== CLEANUP ====================
         private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
         {
-            StopButton_Click(null, null);
-            CompositionTarget.Rendering -= UpdateFrame;
-            midiOut?.Dispose();
-            isPianoRollPlaying = false;
-            isSheetMusicPlaying = false;
+            this.StopButton_Click(null, null);
+            CompositionTarget.Rendering -= this.UpdateFrame;
+            this.midiOut?.Dispose();
+            this.isPianoRollPlaying = false;
+            this.isSheetMusicPlaying = false;
             if (this.viewModel != null)
             {
                 this.viewModel.PropertyChanged -= this.ViewModel_PropertyChanged;

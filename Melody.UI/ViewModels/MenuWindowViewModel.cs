@@ -22,6 +22,7 @@ namespace Melody.UI.ViewModels
         /// <summary>Occurs when a property value changes.</summary>
         public event PropertyChangedEventHandler PropertyChanged;
 
+        /// <summary>Occurs when navigation is requested.</summary>
         public event EventHandler<string> NavigationRequested;
 
         /// <summary>Gets the command to start practice.</summary>
@@ -45,19 +46,18 @@ namespace Melody.UI.ViewModels
 
         private void OnStartPractice()
         {
-            NavigationRequested?.Invoke(this, "Practice");
+            this.NavigationRequested?.Invoke(this, "Practice");
         }
 
         private void OnPlayer()
         {
-            NavigationRequested?.Invoke(this, "Player");
+            this.NavigationRequested?.Invoke(this, "Player");
         }
 
         private void OnSettings()
         {
-            NavigationRequested?.Invoke(this, "Settings");
+            this.NavigationRequested?.Invoke(this, "Settings");
         }
-
 
         private void OnExit()
         {

@@ -208,7 +208,7 @@ namespace Melody.Logic
 
                 string updatedSheetCollectionJson = JsonSerializer.Serialize(collection, options);
 
-                FileController.Save(data: updatedSheetCollectionJson, name: FileController.fileName);
+                FileController.Save(data: updatedSheetCollectionJson, name: FileController.FileName);
                 FileController.Save(data: measureList, name: $"{id}_measureList.json");
                 FileController.Save(data: structure, name: $"{id}_structure.json");
                 FileController.Save(data: progress, name: $"{id}_progress.json");

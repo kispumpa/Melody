@@ -1,4 +1,6 @@
-﻿namespace Melody.UI
+﻿// Copyright (c) Matula Márton. All rights reserved.
+
+namespace Melody.UI
 {
     using System.Windows;
     using CommunityToolkit.Mvvm.DependencyInjection;
@@ -12,6 +14,7 @@
     /// </summary>
     public partial class App : Application
     {
+        /// <summary>Initializes a new instance of the <see cref="App"/> class.</summary>
         public App()
         {
             Ioc.Default.ConfigureServices(

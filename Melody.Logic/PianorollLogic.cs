@@ -149,14 +149,14 @@ namespace Melody.Logic
                             ? (MusicNote)(((int)(MusicNote)Enum.Parse(typeof(MusicNote), step) + noteObj.Pitch.Alter) % 12)
                             : (MusicNote)Enum.Parse(typeof(MusicNote), step))}{noteObj.Pitch.Octave}";
 
-                        double index = (int)(Step)Enum.Parse(typeof(Step), step) + (7 * noteObj.Pitch.Octave) + CheckAlter(temPitch, 0.5, 0, true, noteObj.Pitch.Alter) - this.minIndex;
+                        double index = (int)(Step)Enum.Parse(typeof(Step), step) + (7 * noteObj.Pitch.Octave) + this.CheckAlter(temPitch, 0.5, 0, true, noteObj.Pitch.Alter) - this.minIndex;
 
                         Models.Note note = new Models.Note
                         {
                             X = new Accordinate
                             {
                                 Position = (windowWidth / this.TotalVisibleNotes) * index,
-                                Length = windowWidth / this.TotalVisibleNotes / CheckAlter(temPitch, 2, 1),
+                                Length = windowWidth / this.TotalVisibleNotes / this.CheckAlter(temPitch, 2, 1),
                             },
                             Y = new Accordinate
                             {
@@ -193,21 +193,6 @@ namespace Melody.Logic
             this.messenger.Send("Notes stored successfully for piano roll.", "PianorollLoadResult");
         }
 
-        private double CheckAlter(string temPitch, double good, double bad, bool index = false, int alter = 0)
-        {
-            if (temPitch.Contains("b") && !temPitch.Contains("Cb") && !temPitch.Contains("Fb"))
-            {
-                return alter == 0 ? good : good * alter;
-            }
-
-            if (temPitch.Contains("Cb") && temPitch.Contains("Fb") && index)
-            {
-                return 1;
-            }
-
-            return bad;
-        }
-
         /// <inheritdoc/>
         public void UpdateNotePositions(double canvasHeight)
         {
@@ -232,6 +217,21 @@ namespace Melody.Logic
         public void CreatePractice()
         {
             // PracticeNotes -> PracticeStucture.json
+        }
+
+        private double CheckAlter(string temPitch, double good, double bad, bool index = false, int alter = 0)
+        {
+            if (temPitch.Contains("b") && !temPitch.Contains("Cb") && !temPitch.Contains("Fb"))
+            {
+                return alter == 0 ? good : good * alter;
+            }
+
+            if (temPitch.Contains("Cb") && temPitch.Contains("Fb") && index)
+            {
+                return 1;
+            }
+
+            return bad;
         }
 
         private void GetOctaveInterval()

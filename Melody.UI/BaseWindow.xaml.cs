@@ -1,28 +1,17 @@
-﻿using Melody.UI.ViewModels;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.UI
 {
-    /// <summary>
-    /// Interaction logic for BaseWindow.xaml
-    /// </summary>
+    using System.Windows;
+    using Melody.UI.ViewModels;
+
+    /// <summary>Base window class.</summary>
     public partial class BaseWindow : Window
     {
+        /// <summary>Initializes a new instance of the <see cref="BaseWindow"/> class.</summary>
         public BaseWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
             this.DataContext = new BaseWindowViewModel();
         }
     }

@@ -9,8 +9,11 @@ namespace Melody.Logic
     /// <summary>Provides methods for managing files related to the Melody application.</summary>
     public static class FileController
     {
+        private static string fileName = "sheetCollections.json";
         private static string appName = "Melody";
-        public static string fileName = "sheetCollections.json";
+
+        /// <summary>Gets the name of the collection file.</summary>
+        public static string FileName => fileName;
 
         /// <summary>Gets the path to the collection file.</summary>
         /// <returns>The path to the collection file.</returns>
@@ -23,7 +26,7 @@ namespace Melody.Logic
                 Directory.CreateDirectory(folderPath);
             }
 
-            string colPath = Path.Combine(folderPath, fileName);
+            string colPath = Path.Combine(folderPath, FileName);
 
             if (!File.Exists(colPath))
             {
@@ -35,10 +38,10 @@ namespace Melody.Logic
                 {
                     WriteIndented = true,
                 });
-                Save(json, fileName);
+                Save(json, FileName);
             }
 
-            return Path.Combine(folderPath, fileName);
+            return Path.Combine(folderPath, FileName);
         }
 
         /// <summary>Gets the sheet collection.</summary>

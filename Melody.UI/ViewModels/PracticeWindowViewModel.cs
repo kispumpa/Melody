@@ -13,6 +13,7 @@ namespace Melody.UI.ViewModels
     using Melody.Logic.Interfaces;
     using Melody.Logic.Models;
 
+    /// <summary>ViewModel for the practice window.</summary>
     public class PracticeWindowViewModel : ObservableRecipient
     {
         private readonly Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
@@ -29,6 +30,7 @@ namespace Melody.UI.ViewModels
         private bool isKeySelected;
         private string fileName;
 
+        /// <summary>Initializes a new instance of the <see cref="PracticeWindowViewModel"/> class.</summary>
         public PracticeWindowViewModel()
             : this(
                 IsInDesignMode ? null : Ioc.Default.GetService<IPianorollLogic>(),
@@ -38,6 +40,11 @@ namespace Melody.UI.ViewModels
         {
         }
 
+        /// <summary>Initializes a new instance of the <see cref="PracticeWindowViewModel"/> class with the specified logic components.</summary>
+        /// <param name="pianorollLogic">The pianoroll logic component.</param>
+        /// <param name="mxlUnpacker">The MusicXML unpacker component.</param>
+        /// <param name="practiceLogic">The practice logic component.</param>
+        /// <param name="toggleLogic">The toggle view logic component.</param>
         public PracticeWindowViewModel(IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker, IPracticeLogic practiceLogic, IToggleViewLogic toggleLogic)
         {
             this.IsActive = true;
@@ -96,9 +103,13 @@ namespace Melody.UI.ViewModels
                 }
             });
 
-            GoHomeCommand = new RelayCommand(() => NavigationRequested?.Invoke(this, "Menu"));
+            this.GoHomeCommand = new RelayCommand(() => this.NavigationRequested?.Invoke(this, "Menu"));
         }
 
+        /// <summary>Occurs when navigation is requested.</summary>
+        public event EventHandler<string> NavigationRequested;
+
+        /// <summary>Gets a value indicating whether the application is in design mode.</summary>
         public static bool IsInDesignMode
         {
             get
@@ -108,36 +119,45 @@ namespace Melody.UI.ViewModels
             }
         }
 
+        /// <summary>Gets or sets the command to create a new sheet.</summary>
         public ICommand CreateSheetCommand { get; set; }
 
+        /// <summary>Gets or sets the command to load an existing sheet.</summary>
         public ICommand LoadSheetCommand { get; set; }
 
+        /// <summary>Gets or sets the command to navigate to the home view.</summary>
         public ICommand GoHomeCommand { get; set; }
 
-        public event EventHandler<string> NavigationRequested;
-
+        /// <summary>Gets a value indicating whether the piano roll view is active.</summary>
         public bool IsPianoRollView => this.toggleLogic.IsPianoRollView;
 
+        /// <summary>Gets a value indicating whether the button view is active.</summary>
         public bool IsButtonView => !this.toggleLogic.IsPianoRollView;
 
+        /// <summary>Gets the pianoroll logic component.</summary>
         public IPianorollLogic PianorollLogic => this.pianorollLogic;
 
+        /// <summary>Gets the practice logic component.</summary>
         public IPracticeLogic PracticeLogic => this.practiceLogic;
 
+        /// <summary>Gets the toggle view logic component.</summary>
         public IToggleViewLogic ToggleLogic => this.toggleLogic;
 
+        /// <summary>Gets or sets the name of the currently loaded file.</summary>
         public string FileName
         {
             get => this.fileName;
             set => this.SetProperty(ref this.fileName, value);
         }
 
+        /// <summary>Gets or sets a value indicating whether the piano roll view is loaded.</summary>
         public bool IsPianorollLoaded
         {
             get => this.isPianorollLoaded;
             set => this.SetProperty(ref this.isPianorollLoaded, value);
         }
 
+        /// <summary>Gets or sets a value indicating whether the necessary files for practice are loaded.</summary>
         public bool AreFilesLoaded
         {
             get => this.isKeySelected;

@@ -14,7 +14,7 @@ namespace Melody.UI.ViewModels
         public BaseWindowViewModel()
         {
             this.MenuWindowVM = new MenuWindowViewModel();
-            this.MenuWindowVM.NavigationRequested += OnMenuNavigationRequested;
+            this.MenuWindowVM.NavigationRequested += this.OnMenuNavigationRequested;
 
             this.CurrentView = this.MenuWindowVM;
         }
@@ -30,10 +30,11 @@ namespace Melody.UI.ViewModels
             {
                 this.currentView = value;
                 this.OnPropertyChanged();
-                this.OnPropertyChanged(nameof(WindowTitle));
+                this.OnPropertyChanged(nameof(this.WindowTitle));
             }
         }
 
+        /// <summary>Gets the title of the current window.</summary>
         public string WindowTitle
         {
             get => this.CurrentView switch
@@ -51,6 +52,7 @@ namespace Melody.UI.ViewModels
         /// <summary>Gets or sets the main window view model.</summary>
         public MainWindowViewModel MainWindowVM { get; set; }
 
+        /// <summary>Gets or sets the practice window view model.</summary>
         public PracticeWindowViewModel PracticeWindowVM { get; set; }
 
         // Ide majd bekerülhet a SettingsViewModel is
@@ -69,13 +71,13 @@ namespace Melody.UI.ViewModels
             {
                 case "Practice":
                     this.PracticeWindowVM = new PracticeWindowViewModel();
-                    this.PracticeWindowVM.NavigationRequested += OnChildNavigationRequested;
+                    this.PracticeWindowVM.NavigationRequested += this.OnChildNavigationRequested;
 
                     this.CurrentView = this.PracticeWindowVM;
                     break;
                 case "Player":
                     this.MainWindowVM = new MainWindowViewModel();
-                    this.MainWindowVM.NavigationRequested += OnChildNavigationRequested;
+                    this.MainWindowVM.NavigationRequested += this.OnChildNavigationRequested;
 
                     this.CurrentView = this.MainWindowVM;
                     break;
@@ -94,13 +96,13 @@ namespace Melody.UI.ViewModels
             {
                 if (this.MainWindowVM != null)
                 {
-                    this.MainWindowVM.NavigationRequested -= OnChildNavigationRequested;
+                    this.MainWindowVM.NavigationRequested -= this.OnChildNavigationRequested;
                     this.MainWindowVM = null;
                 }
 
                 if (this.PracticeWindowVM != null)
                 {
-                    this.PracticeWindowVM.NavigationRequested -= OnChildNavigationRequested;
+                    this.PracticeWindowVM.NavigationRequested -= this.OnChildNavigationRequested;
                     this.PracticeWindowVM = null;
                 }
 

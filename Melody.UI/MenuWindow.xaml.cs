@@ -1,28 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
+﻿// Copyright (c) Matula Márton. All rights reserved.
 
 namespace Melody.UI
 {
-    /// <summary>
-    /// Interaction logic for MenuWindow.xaml
-    /// </summary>
+    using System.Windows.Controls;
+
+    /// <summary>Code behind for MenuWindow.xaml.</summary>
     public partial class MenuWindow : UserControl
     {
+        /// <summary>Initializes a new instance of the <see cref="MenuWindow"/> class.</summary>
         public MenuWindow()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
     }
 }
