@@ -17,6 +17,7 @@ namespace Melody.UI.ViewModels
         /// <summary>Initializes a new instance of the <see cref="SettingsWindowViewModel"/> class.</summary>
         public SettingsWindowViewModel()
         {
+            this.SaveSettingsCommand = new RelayCommand(this.SaveSettings);
             this.GoHomeCommand = new RelayCommand(() => this.NavigationRequested?.Invoke(this, "Menu"));
         }
 
@@ -24,7 +25,7 @@ namespace Melody.UI.ViewModels
         public event EventHandler<string> NavigationRequested;
 
         /// <summary>Gets the available themes.</summary>
-        public ObservableCollection<string> AvailableThemes { get; } = new ObservableCollection<string> { "Default", "Dark", "Light" };
+        public ObservableCollection<string> AvailableThemes { get; } = new ObservableCollection<string> { "Default", "Dark", "Light", "Black&White" };
 
         /// <summary>Gets or sets the selected theme.</summary>
         public string SelectedTheme
@@ -64,5 +65,41 @@ namespace Melody.UI.ViewModels
 
         /// <summary>Gets the command to navigate back to the home screen.</summary>
         public ICommand GoHomeCommand { get; }
+
+        private void SaveSettings()
+        {
+            // 1. Téma azonnali alkalmazása a felületen
+            this.ApplyTheme(this.SelectedTheme);
+
+            // 2. Beállítások mentése a háttértárra (hogy újraindítás után is megmaradjon)
+            // Melody.Properties.Settings.Default.Theme = this.SelectedTheme;
+            // Melody.Properties.Settings.Default.IsFullPianoWidth = this.IsFullPianoWidth;
+            // Melody.Properties.Settings.Default.Save();
+
+            // 3. Visszatérés a Főmenübe
+            this.NavigationRequested?.Invoke(this, "Menu");
+        }
+
+        private void ApplyTheme(string themeName)
+        {
+            // A fájl útvonala (pl. "Themes/Dark.xaml" vagy "Themes/Default.xaml")
+            string themePath = $"Themes/{themeName}.xaml";
+
+            try
+            {
+                System.Windows.ResourceDictionary newTheme = new System.Windows.ResourceDictionary
+                {
+                    Source = new Uri(themePath, UriKind.Relative)
+                };
+
+                // Kicseréljük az App.xaml-ben lévő aktuális témát az újra
+                System.Windows.Application.Current.Resources.MergedDictionaries.Clear();
+                System.Windows.Application.Current.Resources.MergedDictionaries.Add(newTheme);
+            }
+            catch (System.Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Hiba a téma betöltésekor: {ex.Message}");
+            }
+        }
     }
 }

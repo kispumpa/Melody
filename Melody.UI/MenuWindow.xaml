@@ -6,12 +6,12 @@
              xmlns:local="clr-namespace:Melody.UI"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="#2C3E50">
+    <Grid Background="{DynamicResource MainBackgroundBrush}">
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
             <TextBlock Text="🎹 Melody" 
                        FontSize="36" 
                        FontWeight="Bold"
-                       Foreground="White"
+                       Foreground="{DynamicResource AppNameForeground}"
                        HorizontalAlignment="Center"
                        Margin="0,0,0,50"/>
 
@@ -20,8 +20,8 @@
                     Height="50" 
                     FontSize="18"
                     Margin="0,10"
-                    Background="#27AE60"
-                    Foreground="Black"
+                    Background="{DynamicResource PracticeButtonBackground}"
+                    Foreground="{DynamicResource PracticeButtonForeground}"
                     BorderThickness="0"
                     Cursor="Hand">
                 <Button.Effect>
@@ -34,8 +34,8 @@
                     Height="50" 
                     FontSize="18"
                     Margin="0,10"
-                    Background="#3498DB"
-                    Foreground="Black"
+                    Background="{DynamicResource PlayerButtonBackground}"
+                    Foreground="{DynamicResource PlayerButtonForeground}"
                     BorderThickness="0"
                     Cursor="Hand">
                 <Button.Effect>
@@ -48,8 +48,8 @@
                     Height="50" 
                     FontSize="18"
                     Margin="0,10"
-                    Background="Yellow"
-                    Foreground="Black"
+                    Background="{DynamicResource SettingsButtonBackground}"
+                    Foreground="{DynamicResource SettingsButtonForeground}"
                     BorderThickness="0"
                     Cursor="Hand">
                 <Button.Effect>
@@ -62,8 +62,8 @@
                     Height="50" 
                     FontSize="18"
                     Margin="0,10"
-                    Background="#E74C3C"
-                    Foreground="Black"
+                    Background="{DynamicResource ExitButtonBackground}"
+                    Foreground="{DynamicResource ExitButtonForeground}"
                     BorderThickness="0"
                     Cursor="Hand">
                 <Button.Effect>

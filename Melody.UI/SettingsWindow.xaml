@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Melody.UI"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid Background="#2C3E50">
+    <Grid Background="{DynamicResource SettingsBackgroundBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="1*"/>
             <RowDefinition Height="11*"/>
@@ -27,12 +27,12 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="50,20,50,20">
 
-                <TextBlock Text="Beállítások" FontSize="36" Foreground="White" FontWeight="Bold" Margin="0,0,0,40" />
+                <TextBlock Text="Beállítások" FontSize="36" Foreground="{DynamicResource SettingsMainText}" FontWeight="Bold" Margin="0,0,0,40" />
 
-                <Border Background="#34495E" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <Border Background="{DynamicResource SettingsBorderBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Színtéma" Foreground="White" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                        <TextBlock Text="Válaszd ki az alkalmazás megjelenését." Foreground="#BDC3C7" FontSize="14" Margin="0,0,0,15"/>
+                        <TextBlock Text="Színtéma" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <TextBlock Text="Válaszd ki az alkalmazás megjelenését." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
 
                         <ComboBox ItemsSource="{Binding AvailableThemes}" 
                                   SelectedItem="{Binding SelectedTheme}" 
@@ -43,16 +43,16 @@
                     </StackPanel>
                 </Border>
 
-                <Border Background="#34495E" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <Border Background="{DynamicResource SettingsBorderBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Zongoratekercs megjelenítése" Foreground="White" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                        <TextBlock Text="Állítsd be, hogy a teljes 88 billentyűs zongora látszódjon-e, vagy csak az aktív oktávok." Foreground="#BDC3C7" FontSize="14" Margin="0,0,0,15"/>
+                        <TextBlock Text="Zongoratekercs megjelenítése" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <TextBlock Text="Állítsd be, hogy a teljes 88 billentyűs zongora látszódjon-e, vagy csak az aktív oktávok." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
 
                         <StackPanel Margin="5,0,0,0">
                             <RadioButton Content="Csak az aktív oktávok (Dinamikus)" 
                                 IsChecked="{Binding IsDynamicPianoWidth}" 
                                 GroupName="PianoWidthGroup"
-                                Foreground="White" FontSize="16">
+                                Foreground="White" FontSize="14">
                                 <RadioButton.LayoutTransform>
                                     <ScaleTransform ScaleX="1.2" ScaleY="1.2" />
                                 </RadioButton.LayoutTransform>
@@ -60,7 +60,7 @@
                             <RadioButton Content="Teljes zongora (88 billentyű)" 
                                 IsChecked="{Binding IsFullPianoWidth}" 
                                 GroupName="PianoWidthGroup"
-                                Foreground="White" FontSize="16" Margin="0,0,0,10">
+                                Foreground="White" FontSize="14" Margin="0,0,0,10">
                                 <RadioButton.LayoutTransform>
                                     <ScaleTransform ScaleX="1.2" ScaleY="1.2" />
                                 </RadioButton.LayoutTransform>
@@ -69,10 +69,10 @@
 
                     </StackPanel>
                 </Border>
-                <Border Background="#34495E" CornerRadius="8" Padding="20" Margin="0,0,0,20">
+                <Border Background="{DynamicResource SettingsBorderBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Nyelv (Language)" Foreground="White" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                        <TextBlock Text="Válaszd ki az alkalmazás nyelvét. A változtatásokhoz újraindítás lehet szükséges." Foreground="#BDC3C7" FontSize="14" Margin="0,0,0,15"/>
+                        <TextBlock Text="Nyelv (Language)" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <TextBlock Text="Válaszd ki az alkalmazás nyelvét. A változtatásokhoz újraindítás lehet szükséges." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
 
                         <ComboBox ItemsSource="{Binding AvailableLanguages}" 
                   SelectedItem="{Binding SelectedLanguage}" 
@@ -92,7 +92,7 @@
                 <Button Content="Mentés" 
                         Command="{Binding SaveSettingsCommand}" 
                         Width="120" Padding="10,8" 
-                        Background="#27AE60" Foreground="White" 
+                        Background="{DynamicResource SettingsSaveButtonBackground}" Foreground="{DynamicResource SettingsSaveButtonForeground}" 
                         BorderThickness="0" 
                         FontSize="16" FontWeight="SemiBold" Cursor="Hand"/>
 

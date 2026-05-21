@@ -1,0 +1,28 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <SolidColorBrush x:Key="MainBackgroundBrush" Color="#2C3E50"/>
+    
+    <SolidColorBrush x:Key="AppNameForeground" Color="White"/>
+    
+    <SolidColorBrush x:Key="PracticeButtonBackground" Color="#27AE60"/>
+    <SolidColorBrush x:Key="PracticeButtonForeground" Color="Black"/>
+
+    <SolidColorBrush x:Key="PlayerButtonBackground" Color="#3498DB"/>
+    <SolidColorBrush x:Key="PlayerButtonForeground" Color="Black"/>
+    
+    <SolidColorBrush x:Key="SettingsButtonBackground" Color="Yellow"/>
+    <SolidColorBrush x:Key="SettingsButtonForeground" Color="Black"/>
+
+    <SolidColorBrush x:Key="ExitButtonBackground" Color="#E74C3C"/>
+    <SolidColorBrush x:Key="ExitButtonForeground" Color="Black"/>
+
+    <SolidColorBrush x:Key="SettingsBackgroundBrush" Color="#2C3E50"/>
+    <SolidColorBrush x:Key="SettingsBorderBrush" Color="#34495E"/>
+    
+    <SolidColorBrush x:Key="SettingsMainText" Color="White"/>
+    <SolidColorBrush x:Key="SettingsSubText" Color="#BDC3C7"/>
+
+    <SolidColorBrush x:Key="SettingsSaveButtonBackground" Color="#27AE60"/>
+    <SolidColorBrush x:Key="SettingsSaveButtonForeground" Color="White"/>
+
+</ResourceDictionary>

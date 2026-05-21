@@ -5,20 +5,27 @@
              xmlns:vms="clr-namespace:Melody.UI.ViewModels"
              StartupUri="BaseWindow.xaml">
     <Application.Resources>
-        <DataTemplate DataType="{x:Type vms:MenuWindowViewModel}">
-            <local:MenuWindow />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vms:MainWindowViewModel}">
-            <local:MainWindow />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vms:PracticeWindowViewModel}">
-            <local:PracticeWindow />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vms:SettingsWindowViewModel}">
-            <local:SettingsWindow />
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type vms:BaseWindowViewModel}">
-            <local:BaseWindow />
-        </DataTemplate>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Default.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+
+            <DataTemplate DataType="{x:Type vms:MenuWindowViewModel}">
+                <local:MenuWindow />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vms:MainWindowViewModel}">
+                <local:MainWindow />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vms:PracticeWindowViewModel}">
+                <local:PracticeWindow />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vms:SettingsWindowViewModel}">
+                <local:SettingsWindow />
+            </DataTemplate>
+            <DataTemplate DataType="{x:Type vms:BaseWindowViewModel}">
+                <local:BaseWindow />
+            </DataTemplate>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>
