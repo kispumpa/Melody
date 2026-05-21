@@ -65,4 +65,18 @@
     <SolidColorBrush x:Key="ExpanderBorderBrush" Color="#1A252F"/>
     <SolidColorBrush x:Key="ExpanderScrollViewerBackground" Color="#1A252F"/>
     <SolidColorBrush x:Key="ExpanderScrollViewerForeground" Color="#BDC3C7"/>
+    
+    <!--Practice-->
+    <SolidColorBrush x:Key="ProgressTextForeground" Color="White"/>
+    
+    <SolidColorBrush x:Key="ProgressPanelTextForeground" Color="White"/>
+    <SolidColorBrush x:Key="ProgressPanelWaitingForeground" Color="#E74C3C"/>
+
+    <SolidColorBrush x:Key="CreatePracticeBackground" Color="Yellow"/>
+    <SolidColorBrush x:Key="CreatePracticeForeground" Color="Black"/>
+
+    <SolidColorBrush x:Key="LoadPracticeBackground" Color="#27AE60"/>
+    <SolidColorBrush x:Key="LoadPracticeForeground" Color="Black"/>
+    
+    
 </ResourceDictionary>

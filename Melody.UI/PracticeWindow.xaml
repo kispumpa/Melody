@@ -15,26 +15,32 @@
             <RowDefinition Height="11*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource MainBackgroundBrush}">
             <Button Command="{Binding GoHomeCommand}" Style="{StaticResource HomeButtonStyle}" />
-            <Button x:Name="btn_startPractice" Content="Start practice" Margin="0,0,20,0" Padding="10,5" Click="StartPracticeButton_Click" IsEnabled="False"/>
-            <Button x:Name="btn_retry" Content="Retry" Margin="0,0,20,0" Padding="10,5" Click="RetryButton_Click" IsEnabled="False"/>
-            <Button x:Name="btn_continue" Content="Continue practice" Margin="0,0,20,0" Padding="10,5" IsEnabled="False" Click="ContinueButton_Click"/>
-            <TextBlock x:Name="practiceDisplay" Text="" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14"/>
+            <Button x:Name="btn_startPractice" Content="Start practice" Margin="5" Padding="10,5" Click="StartPracticeButton_Click" IsEnabled="False"
+                    Background="{DynamicResource UpperControlPanelBackground}" Foreground="{DynamicResource UpperControlPanelForeground}"/>
+            <Button x:Name="btn_retry" Content="Retry" Margin="5" Padding="10,5" Click="RetryButton_Click" IsEnabled="False"
+                    Background="{DynamicResource UpperControlPanelBackground}" Foreground="{DynamicResource UpperControlPanelForeground}"/>
+            <Button x:Name="btn_continue" Content="Continue practice" Margin="5" Padding="10,5" IsEnabled="False" Click="ContinueButton_Click"
+                    Background="{DynamicResource UpperControlPanelBackground}" Foreground="{DynamicResource UpperControlPanelForeground}"/>
+            <TextBlock x:Name="practiceDisplay" Text="" VerticalAlignment="Center" Margin="5" FontSize="14"
+                       Foreground="{DynamicResource ProgressTextForeground}"/>
         </StackPanel>
 
         <Grid Background="#2C3E50" Grid.Row="1">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center" VerticalAlignment="Center">
-                <TextBlock Text="Let's practice!" FontSize="30" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                <TextBlock Text="At first, connect the piano through the USB." FontSize="20" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,20"/>
-                <TextBlock x:Name="midiConnectionDisplay" Text="Waiting for piano signal..." FontSize="20" FontWeight="Bold" Foreground="#E74C3C" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                <TextBlock Text="Let's practice!" FontSize="30" FontWeight="Bold" Foreground="{DynamicResource ProgressPanelTextForeground}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                <TextBlock Text="At first, connect the piano through the USB." FontSize="20" FontWeight="Bold" Foreground="{DynamicResource ProgressPanelTextForeground}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
+                <TextBlock x:Name="midiConnectionDisplay" Text="Waiting for piano signal..." FontSize="20" FontWeight="Bold" Foreground="{DynamicResource ProgressPanelWaitingForeground}" HorizontalAlignment="Center" Margin="0,0,0,20"/>
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <Button x:Name="btn_createPractice" Content="Create Practice" IsEnabled="False" FontSize="20" HorizontalAlignment="Left" Command="{Binding CreateSheetCommand}" Margin="20,0" Height="66" Width="200" Background="Yellow" Cursor="Hand">
+                    <Button x:Name="btn_createPractice" Content="Create Practice" IsEnabled="False" FontSize="20" HorizontalAlignment="Left" Command="{Binding CreateSheetCommand}" 
+                            Margin="20,0" Height="66" Width="200" Background="{DynamicResource CreatePracticeBackground}" Foreground="{DynamicResource CreatePracticeForeground}" Cursor="Hand">
                         <Button.Effect>
                             <DropShadowEffect/>
                         </Button.Effect>
                     </Button>
-                    <Button x:Name="btn_loadPractice" Content="Load Practice" IsEnabled="False" FontSize="20" HorizontalAlignment="Left" Command="{Binding LoadSheetCommand}" Margin="20,0" Height="66" Width="200" Background="#27AE60" Cursor="Hand">
+                    <Button x:Name="btn_loadPractice" Content="Load Practice" IsEnabled="False" FontSize="20" HorizontalAlignment="Left" Command="{Binding LoadSheetCommand}" 
+                            Margin="20,0" Height="66" Width="200" Background="{DynamicResource LoadPracticeBackground}" Foreground="{DynamicResource LoadPracticeForeground}" Cursor="Hand">
                         <Button.Effect>
                             <DropShadowEffect/>
                         </Button.Effect>
