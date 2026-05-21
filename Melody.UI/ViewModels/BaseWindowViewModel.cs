@@ -42,6 +42,7 @@ namespace Melody.UI.ViewModels
                 MenuWindowViewModel => "Melody - Menu",
                 MainWindowViewModel => "Melody - Player",
                 PracticeWindowViewModel => "Melody - Practice",
+                SettingsWindowViewModel => "Melody - Settings",
                 _ => "Melody"
             };
         }

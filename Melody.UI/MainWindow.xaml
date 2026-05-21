@@ -17,20 +17,12 @@
         </Grid.RowDefinitions>
 
         <!-- Upper Control Panel -->
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
-            <Button Command="{Binding GoHomeCommand}" Padding="10,5" Margin="0,0,20,0" Background="#34495E" Foreground="White" BorderThickness="0">
-                <StackPanel Orientation="Horizontal">
-
-                    <Path Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" 
-              Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" 
-              Width="16" Height="16" 
-              Stretch="Uniform" />
-                </StackPanel>
-            </Button>
-            <Button Content="Load Sheet music" Command="{Binding LoadSheetCommand}" Margin="0,0,10,0" Padding="10,5"/>
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource MainBackgroundBrush}">
+            <Button Command="{Binding GoHomeCommand}" Style="{StaticResource HomeButtonStyle}" />
+            <Button Content="Load Sheet music" Command="{Binding LoadSheetCommand}" Margin="5" Padding="10,5"/>
             <ComboBox ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" 
-                      Width="200" Margin="0,0,10,0" VerticalContentAlignment="Center"/>
-            <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5" Margin="0,0,10,0"/>
+                      Width="200" Margin="5" VerticalContentAlignment="Center"/>
+            <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5" Margin="5"/>
             <TextBlock Text="{Binding ViewText}" FontSize="18" FontWeight="Bold" Padding="10,5" VerticalAlignment="Center"/>
         </StackPanel>
 
@@ -61,7 +53,7 @@
         </Grid>
 
         <!-- Playing Controls -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" Background="{DynamicResource FooterBackground}">
             <Button x:Name="playButton" Content="▶ Play" Padding="15,5" Margin="5" Click="PlayButton_Click"/>
             <Button x:Name="pauseButton" Content="⏸ Pause" Padding="15,5" Margin="5" Click="PauseButton_Click" IsEnabled="False"/>
             <Button x:Name="stopButton" Content="⏹ Stop" Padding="15,5" Margin="5" Click="StopButton_Click" IsEnabled="False"/>

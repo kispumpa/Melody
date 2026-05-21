@@ -1,5 +1,6 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--Menu-->
     <SolidColorBrush x:Key="MainBackgroundBrush" Color="#2C3E50"/>
     
     <SolidColorBrush x:Key="AppNameForeground" Color="White"/>
@@ -15,14 +16,22 @@
 
     <SolidColorBrush x:Key="ExitButtonBackground" Color="#E74C3C"/>
     <SolidColorBrush x:Key="ExitButtonForeground" Color="Black"/>
-
+    
+    <!--Settings-->
     <SolidColorBrush x:Key="SettingsBackgroundBrush" Color="#2C3E50"/>
     <SolidColorBrush x:Key="SettingsBorderBrush" Color="#34495E"/>
     
     <SolidColorBrush x:Key="SettingsMainText" Color="White"/>
     <SolidColorBrush x:Key="SettingsSubText" Color="#BDC3C7"/>
+    <SolidColorBrush x:Key="SettingsOptionText" Color="White"/>
 
     <SolidColorBrush x:Key="SettingsSaveButtonBackground" Color="#27AE60"/>
     <SolidColorBrush x:Key="SettingsSaveButtonForeground" Color="White"/>
+
+    <SolidColorBrush x:Key="HomeButtonBackground" Color="#34495E"/>
+    <SolidColorBrush x:Key="HomeButtonForeground" Color="White"/>
+    <SolidColorBrush x:Key="HomeButtonBorderBrush" Color="White"/>
+
+    <SolidColorBrush x:Key="FooterBackground" Color="#1A252F"/>
 
 </ResourceDictionary>

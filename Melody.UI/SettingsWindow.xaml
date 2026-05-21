@@ -13,15 +13,8 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
-            <Button Command="{Binding GoHomeCommand}" Padding="10,5" Margin="0,0,20,0" Background="#34495E" Foreground="White" BorderThickness="0">
-                <StackPanel Orientation="Horizontal">
-                    <Path Data="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z" 
-                          Fill="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" 
-                          Width="16" Height="16" 
-                          Stretch="Uniform" />
-                </StackPanel>
-            </Button>
+        <StackPanel Grid.Row="0" Orientation="Horizontal">
+            <Button Command="{Binding GoHomeCommand}" Style="{StaticResource HomeButtonStyle}" />
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
@@ -52,7 +45,7 @@
                             <RadioButton Content="Csak az aktív oktávok (Dinamikus)" 
                                 IsChecked="{Binding IsDynamicPianoWidth}" 
                                 GroupName="PianoWidthGroup"
-                                Foreground="White" FontSize="14">
+                                Foreground="{DynamicResource SettingsOptionText}" FontSize="14">
                                 <RadioButton.LayoutTransform>
                                     <ScaleTransform ScaleX="1.2" ScaleY="1.2" />
                                 </RadioButton.LayoutTransform>
@@ -60,7 +53,7 @@
                             <RadioButton Content="Teljes zongora (88 billentyű)" 
                                 IsChecked="{Binding IsFullPianoWidth}" 
                                 GroupName="PianoWidthGroup"
-                                Foreground="White" FontSize="14" Margin="0,0,0,10">
+                                Foreground="{DynamicResource SettingsOptionText}" FontSize="14" Margin="0,0,0,10">
                                 <RadioButton.LayoutTransform>
                                     <ScaleTransform ScaleX="1.2" ScaleY="1.2" />
                                 </RadioButton.LayoutTransform>
@@ -86,7 +79,7 @@
             </StackPanel>
         </ScrollViewer>
 
-        <Border Grid.Row="2" Background="#1A252F" Padding="20">
+        <Border Grid.Row="2" Background="{DynamicResource FooterBackground}" Padding="20">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
 
                 <Button Content="Mentés" 
