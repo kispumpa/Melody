@@ -34,4 +34,8 @@
 
     <SolidColorBrush x:Key="FooterBackground" Color="#1A252F"/>
 
+    <SolidColorBrush x:Key="PianoRollLeftHandNoteBrush" Color="#5C6BC0"/>
+    <SolidColorBrush x:Key="PianoRollRightHandNoteBrush" Color="#FF7043"/>
+    
+
 </ResourceDictionary>

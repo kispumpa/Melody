@@ -216,7 +216,7 @@ namespace Melody.UI
                 {
                     Width = note.X.Length,
                     Height = note.Y.Length,
-                    Fill = new SolidColorBrush(Color.FromRgb(255, 165, 0)),
+                    Fill = note.IsRightHand ? (Brush)Application.Current.Resources["PianoRollRightHandNoteBrush"] : (Brush)Application.Current.Resources["PianoRollLeftHandNoteBrush"],
                     Stroke = Brushes.Black,
                     StrokeThickness = 1,
                     Visibility = Visibility.Hidden,
@@ -426,11 +426,6 @@ namespace Melody.UI
         {
             double elapsed = (DateTime.Now - this.pianoRollStartTime).TotalSeconds * PlaybackSpeed;
 
-            // A sebességed (pixel / másodperc). A 4.5/képkocka nagyjából 270 pixel/másodpercnek felel meg.
-            // Ezt a számot kell növelned/csökkentened a tökéletes sebességhez!
-
-
-            // Az új X pozíció: Kezdőpont (300) mínusz (eltelt idő * sebesség)
             this.ImageTransform.X = 300 - (elapsed * (PixelsPerSecond + 4));
         }
 

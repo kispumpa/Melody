@@ -107,9 +107,10 @@ namespace Melody.Logic
                     if (isPractice)
                     {
                         this.PracticeNotes[++measureCount] = new List<Models.Note>();
-                        isRightHand = true;
                         this.messenger.Send($"Processing measure no. {measureCount}...", "PracticeLoadResult");
                     }
+
+                    isRightHand = true;
 
                     foreach (MeasureElement element in measure.MeasureElements)
                     {
