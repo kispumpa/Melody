@@ -68,7 +68,7 @@
         <Grid Grid.RowSpan="3" Background="{DynamicResource LoadingBackground}" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" Panel.ZIndex="100">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="500">
 
-                <TextBlock Text="Fájl feldolgozása folyamatban..." 
+                <TextBlock Text="Processing file..." 
                    Foreground="{DynamicResource LoadingForeground}" 
                    FontSize="22" 
                    FontWeight="SemiBold"
@@ -82,7 +82,7 @@
                      BorderThickness="0"
                      Margin="0,0,0,25"/>
 
-                <Expander Header="Részletek megjelenítése" 
+                <Expander Header="Show Details" 
                   Foreground="{DynamicResource LoadingForeground}" 
                   Background="{DynamicResource ExpanderBackground}" 
                   BorderBrush="{DynamicResource ExpanderBorderBrush}" 

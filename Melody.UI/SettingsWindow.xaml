@@ -20,12 +20,12 @@
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
             <StackPanel Margin="50,20,50,20">
 
-                <TextBlock Text="Beállítások" FontSize="36" Foreground="{DynamicResource SettingsMainText}" FontWeight="Bold" Margin="0,0,0,40" />
+                <TextBlock Text="Settings" FontSize="36" Foreground="{DynamicResource SettingsMainText}" FontWeight="Bold" Margin="0,0,0,40" />
 
                 <Border Background="{DynamicResource SettingsBorderBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Színtéma" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                        <TextBlock Text="Válaszd ki az alkalmazás megjelenését." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
+                        <TextBlock Text="Theme" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <TextBlock Text="Choose the appearance of the application." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
 
                         <ComboBox ItemsSource="{Binding AvailableThemes}" 
                                   SelectedItem="{Binding SelectedTheme}" 
@@ -38,11 +38,11 @@
 
                 <Border Background="{DynamicResource SettingsBorderBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Zongoratekercs megjelenítése" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                        <TextBlock Text="Állítsd be, hogy a teljes 88 billentyűs zongora látszódjon-e, vagy csak az aktív oktávok." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
+                        <TextBlock Text="Piano Roll Display" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <TextBlock Text="Set whether to display the full 88-key piano or only the active octaves." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
 
                         <StackPanel Margin="5,0,0,0">
-                            <RadioButton Content="Csak az aktív oktávok (Dinamikus)" 
+                            <RadioButton Content="Only active octaves (Dynamic)" 
                                 IsChecked="{Binding IsDynamicPianoWidth}" 
                                 GroupName="PianoWidthGroup"
                                 Foreground="{DynamicResource SettingsOptionText}" FontSize="14">
@@ -50,7 +50,7 @@
                                     <ScaleTransform ScaleX="1.2" ScaleY="1.2" />
                                 </RadioButton.LayoutTransform>
                             </RadioButton>
-                            <RadioButton Content="Teljes zongora (88 billentyű)" 
+                            <RadioButton Content="Full piano (88 keys)" 
                                 IsChecked="{Binding IsFullPianoWidth}" 
                                 GroupName="PianoWidthGroup"
                                 Foreground="{DynamicResource SettingsOptionText}" FontSize="14" Margin="0,0,0,10">
@@ -64,8 +64,8 @@
                 </Border>
                 <Border Background="{DynamicResource SettingsBorderBrush}" CornerRadius="8" Padding="20" Margin="0,0,0,20">
                     <StackPanel>
-                        <TextBlock Text="Nyelv (Language)" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
-                        <TextBlock Text="Válaszd ki az alkalmazás nyelvét. A változtatásokhoz újraindítás lehet szükséges." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
+                        <TextBlock Text="Language" Foreground="{DynamicResource SettingsMainText}" FontSize="18" FontWeight="SemiBold" Margin="0,0,0,10"/>
+                        <TextBlock Text="Select the application's language." Foreground="{DynamicResource SettingsSubText}" FontSize="14" Margin="0,0,0,15"/>
 
                         <ComboBox ItemsSource="{Binding AvailableLanguages}" 
                   SelectedItem="{Binding SelectedLanguage}" 
@@ -82,9 +82,9 @@
         <Border Grid.Row="2" Background="{DynamicResource FooterBackground}" >
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
 
-                <Button Content="Mentés" 
+                <Button Content="Save changes" 
                         Command="{Binding SaveSettingsCommand}" 
-                        Width="120" Padding="10,8" Margin="5"
+                        Width="150" Padding="10,8" Margin="5"
                         Background="{DynamicResource SettingsSaveButtonBackground}" Foreground="{DynamicResource SettingsSaveButtonForeground}" 
                         BorderThickness="0" 
                         FontSize="16" FontWeight="SemiBold" Cursor="Hand"/>
