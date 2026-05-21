@@ -276,7 +276,7 @@ namespace Melody.UI
                 {
                     Width = note.X.Length,
                     Height = note.Y.Length,
-                    Fill = new SolidColorBrush(System.Windows.Media.Color.FromRgb(255, 165, 0)),
+                    Fill = note.IsRightHand ? (Brush)Application.Current.Resources["PianoRollRightHandNoteBrush"] : (Brush)Application.Current.Resources["PianoRollLeftHandNoteBrush"],
                     Stroke = System.Windows.Media.Brushes.Black,
                     StrokeThickness = 1,
                     Visibility = Visibility.Hidden,
