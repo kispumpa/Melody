@@ -18,11 +18,12 @@
 
         <!-- Upper Control Panel -->
         <StackPanel Grid.Row="0" Orientation="Horizontal" Background="{DynamicResource MainBackgroundBrush}">
-            <Button Command="{Binding GoHomeCommand}" Style="{StaticResource HomeButtonStyle}" />
-            <Button Content="Load Sheet music" Command="{Binding LoadSheetCommand}" Margin="5" Padding="10,5"/>
+            <Button Command="{Binding GoHomeCommand}" Style="{StaticResource HomeButtonStyle}"/>
+            <Button Content="Load Sheet music" Command="{Binding LoadSheetCommand}" Margin="5" Padding="10,5" Background="{DynamicResource UpperControlPanelBackground}" Foreground="{DynamicResource UpperControlPanelForeground}"/>
             <ComboBox ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" 
-                      Width="200" Margin="5" VerticalContentAlignment="Center"/>
-            <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5" Margin="5"/>
+                      Width="200" Margin="5" VerticalContentAlignment="Center"
+                      Background="{DynamicResource UpperControlPanelBackground}" Foreground="{DynamicResource UpperControlPanelForeground}"/>
+            <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5" Margin="5" Background="{DynamicResource UpperControlPanelBackground}" Foreground="{DynamicResource UpperControlPanelForeground}"/>
             <TextBlock Text="{Binding ViewText}" FontSize="18" FontWeight="Bold" Padding="10,5" VerticalAlignment="Center" Foreground="{DynamicResource ViewTextForeground}"/>
         </StackPanel>
 

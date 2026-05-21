@@ -1,8 +1,18 @@
 ﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <!--Menu-->
+    <!--Commons-->
     <SolidColorBrush x:Key="MainBackgroundBrush" Color="#2C3E50"/>
     
+    <SolidColorBrush x:Key="FooterBackground" Color="#1A252F"/>
+    
+    <SolidColorBrush x:Key="HomeButtonBackground" Color="#34495E"/>
+    <SolidColorBrush x:Key="HomeButtonForeground" Color="White"/>
+    <SolidColorBrush x:Key="HomeButtonBorderBrush" Color="White"/>
+
+    <SolidColorBrush x:Key="UpperControlPanelBackground" Color="White"/>
+    <SolidColorBrush x:Key="UpperControlPanelForeground" Color="Black"/>
+    
+    <!--Menu-->
     <SolidColorBrush x:Key="AppNameForeground" Color="White"/>
     
     <SolidColorBrush x:Key="PracticeButtonBackground" Color="#27AE60"/>
@@ -28,12 +38,9 @@
     <SolidColorBrush x:Key="SettingsSaveButtonBackground" Color="#27AE60"/>
     <SolidColorBrush x:Key="SettingsSaveButtonForeground" Color="White"/>
 
-    <SolidColorBrush x:Key="HomeButtonBackground" Color="#34495E"/>
-    <SolidColorBrush x:Key="HomeButtonForeground" Color="White"/>
-    <SolidColorBrush x:Key="HomeButtonBorderBrush" Color="White"/>
-
-    <SolidColorBrush x:Key="FooterBackground" Color="#1A252F"/>
-
+    <!--MainWindow-->
+    <SolidColorBrush x:Key="ViewTextForeground" Color="#E2E8F0"/>
+    
     <SolidColorBrush x:Key="PianoRollLeftHandNoteBrush" Color="#5C6BC0"/>
     <SolidColorBrush x:Key="PianoRollRightHandNoteBrush" Color="#FF7043"/>
 
@@ -45,9 +52,6 @@
 
     <SolidColorBrush x:Key="StopButtonBackground" Color="#E2E8F0"/>
     <SolidColorBrush x:Key="StopButtonForeground" Color="#1E293B"/>
-
-    <SolidColorBrush x:Key="ViewTextForeground" Color="#E2E8F0"/>
-
 
     <SolidColorBrush x:Key="TimerForeground" Color="#E2E8F0"/>
 
