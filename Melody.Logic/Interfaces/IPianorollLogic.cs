@@ -27,7 +27,7 @@ namespace Melody.Logic.Interfaces
 
         /// <summary>Initializes the piano roll with the specified file path.</summary>
         /// <param name="path">The file path to initialize the piano roll.</param>
-        void InitializePianoRoll(string path);
+        void InitializePianoRoll(string path, bool total = false);
 
         /// <summary>Stores the notes with the specified window width and practice mode.</summary>
         /// <param name="windowWidth">The width of the window.</param>

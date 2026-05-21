@@ -201,7 +201,7 @@ namespace Melody.UI.ViewModels
                         this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
 
                         // Messenger.Send("Zongoratekercs inicializálása...", "LogMessage");
-                        this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath);
+                        this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath, Properties.Settings.Default.IsFullPianoWidth);
                     });
 
                     this.IsPianorollLoaded = true;

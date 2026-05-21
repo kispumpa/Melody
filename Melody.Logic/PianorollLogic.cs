@@ -60,7 +60,7 @@ namespace Melody.Logic
         public DateTime StartTime => this.startTime;
 
         /// <inheritdoc/>
-        public void InitializePianoRoll(string path)
+        public void InitializePianoRoll(string path, bool total)
         {
             try
             {
@@ -68,7 +68,7 @@ namespace Melody.Logic
 
                 this.score = MusicXmlParser.GetScore(path);
                 this.GetOctaveInterval();
-                this.totalVisibleNotes = this.CalculateVisibleNotes();
+                this.totalVisibleNotes = total == false ? this.CalculateVisibleNotes() : 52;
 
                 this.startTime = DateTime.Now;
 

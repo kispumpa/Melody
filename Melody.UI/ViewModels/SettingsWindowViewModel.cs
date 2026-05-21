@@ -72,9 +72,9 @@ namespace Melody.UI.ViewModels
             this.ApplyTheme(this.SelectedTheme);
 
             // 2. Beállítások mentése a háttértárra (hogy újraindítás után is megmaradjon)
-            // Melody.Properties.Settings.Default.Theme = this.SelectedTheme;
-            // Melody.Properties.Settings.Default.IsFullPianoWidth = this.IsFullPianoWidth;
-            // Melody.Properties.Settings.Default.Save();
+            Melody.UI.Properties.Settings.Default.Theme = this.SelectedTheme;
+            Melody.UI.Properties.Settings.Default.IsFullPianoWidth = this.IsFullPianoWidth;
+            Melody.UI.Properties.Settings.Default.Save();
 
             // 3. Visszatérés a Főmenübe
             this.NavigationRequested?.Invoke(this, "Menu");
