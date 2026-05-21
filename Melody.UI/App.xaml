@@ -14,8 +14,8 @@
             <DataTemplate DataType="{x:Type vms:MenuWindowViewModel}">
                 <local:MenuWindow />
             </DataTemplate>
-            <DataTemplate DataType="{x:Type vms:MainWindowViewModel}">
-                <local:MainWindow />
+            <DataTemplate DataType="{x:Type vms:PlayerWindowViewModel}">
+                <local:PlayerWindow />
             </DataTemplate>
             <DataTemplate DataType="{x:Type vms:PracticeWindowViewModel}">
                 <local:PracticeWindow />

@@ -40,7 +40,7 @@ namespace Melody.UI.ViewModels
             get => this.CurrentView switch
             {
                 MenuWindowViewModel => "Melody - Menu",
-                MainWindowViewModel => "Melody - Player",
+                PlayerWindowViewModel => "Melody - Player",
                 PracticeWindowViewModel => "Melody - Practice",
                 SettingsWindowViewModel => "Melody - Settings",
                 _ => "Melody"
@@ -51,7 +51,7 @@ namespace Melody.UI.ViewModels
         public MenuWindowViewModel MenuWindowVM { get; set; }
 
         /// <summary>Gets or sets the main window view model.</summary>
-        public MainWindowViewModel MainWindowVM { get; set; }
+        public PlayerWindowViewModel PlayerWindowVM { get; set; }
 
         /// <summary>Gets or sets the practice window view model.</summary>
         public PracticeWindowViewModel PracticeWindowVM { get; set; }
@@ -80,10 +80,10 @@ namespace Melody.UI.ViewModels
                     this.CurrentView = this.PracticeWindowVM;
                     break;
                 case "Player":
-                    this.MainWindowVM = new MainWindowViewModel();
-                    this.MainWindowVM.NavigationRequested += this.OnChildNavigationRequested;
+                    this.PlayerWindowVM = new PlayerWindowViewModel();
+                    this.PlayerWindowVM.NavigationRequested += this.OnChildNavigationRequested;
 
-                    this.CurrentView = this.MainWindowVM;
+                    this.CurrentView = this.PlayerWindowVM;
                     break;
 
                 case "Settings":
@@ -99,10 +99,10 @@ namespace Melody.UI.ViewModels
         {
             if (viewName == "Menu")
             {
-                if (this.MainWindowVM != null)
+                if (this.PlayerWindowVM != null)
                 {
-                    this.MainWindowVM.NavigationRequested -= this.OnChildNavigationRequested;
-                    this.MainWindowVM = null;
+                    this.PlayerWindowVM.NavigationRequested -= this.OnChildNavigationRequested;
+                    this.PlayerWindowVM = null;
                 }
 
                 if (this.PracticeWindowVM != null)

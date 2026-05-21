@@ -14,8 +14,8 @@ namespace Melody.UI
     using Melody.UI.ViewModels;
     using NAudio.Midi;
 
-    /// <summary>Code behind for the MainWindow.xaml.</summary>
-    public partial class MainWindow : UserControl
+    /// <summary>Code behind for the PlayerWindow.xaml.</summary>
+    public partial class PlayerWindow : UserControl
     {
         private const double PixelsPerSecond = 60;
         private const double PlaybackSpeed = 1.0;
@@ -36,33 +36,33 @@ namespace Melody.UI
         private double totalDuration = 0;
         private double totalSvgWidth = 0;
 
-        private MainWindowViewModel viewModel;
+        private PlayerWindowViewModel viewModel;
         private MidiOut midiOut;
 
         private DispatcherTimer timer;
         private double speed = 4.5;
 
-        /// <summary>Initializes a new instance of the <see cref="MainWindow"/> class.</summary>
-        public MainWindow()
+        /// <summary>Initializes a new instance of the <see cref="PlayerWindow"/> class.</summary>
+        public PlayerWindow()
         {
             //RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
             this.InitializeComponent();
 
             this.noteRectangles = new Dictionary<Note, Rectangle>();
 
-            this.DataContextChanged += this.MainWindow_DataContextChanged;
+            this.DataContextChanged += this.PlayerWindow_DataContextChanged;
 
-            this.Loaded += this.MainWindow_Loaded;
-            this.Unloaded += this.MainWindow_Unloaded;
+            this.Loaded += this.PlayerWindow_Loaded;
+            this.Unloaded += this.PlayerWindow_Unloaded;
 
             this.timer = new DispatcherTimer();
 
             this.timer.Interval = TimeSpan.FromMilliseconds(16); // ~60 FPS
         }
 
-        private void MainWindow_Loaded(object sender, RoutedEventArgs e)
+        private void PlayerWindow_Loaded(object sender, RoutedEventArgs e)
         {
-            Debug.WriteLine("MainWindow loaded!");
+            Debug.WriteLine("PlayerWindow loaded!");
             CompositionTarget.Rendering -= this.UpdateFrame;
             CompositionTarget.Rendering += this.UpdateFrame;
 
@@ -74,12 +74,12 @@ namespace Melody.UI
 
         private void ViewModel_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
-            if (e.PropertyName == nameof(MainWindowViewModel.IsPianorollLoaded) && this.viewModel.IsPianorollLoaded)
+            if (e.PropertyName == nameof(PlayerWindowViewModel.IsPianorollLoaded) && this.viewModel.IsPianorollLoaded)
             {
                 Debug.WriteLine("Loading piano roll...");
                 this.InitializePianoRoll();
             }
-            else if (e.PropertyName == nameof(MainWindowViewModel.SelectedMidiDeviceIndex))
+            else if (e.PropertyName == nameof(PlayerWindowViewModel.SelectedMidiDeviceIndex))
             {
                 this.midiOut?.Dispose();
                 if (this.viewModel.SelectedMidiDeviceIndex >= 0)
@@ -87,16 +87,16 @@ namespace Melody.UI
                     this.midiOut = new MidiOut(this.viewModel.SelectedMidiDeviceIndex);
                 }
             }
-            else if (e.PropertyName == nameof(MainWindowViewModel.IsImageLoaded) && this.viewModel.IsImageLoaded)
+            else if (e.PropertyName == nameof(PlayerWindowViewModel.IsImageLoaded) && this.viewModel.IsImageLoaded)
             {
                 Debug.WriteLine("Loading sheet music...");
                 this.InitializeSheetMusic();
             }
         }
 
-        private void MainWindow_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
+        private void PlayerWindow_DataContextChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (e.NewValue is MainWindowViewModel passedViewModel)
+            if (e.NewValue is PlayerWindowViewModel passedViewModel)
             {
                 this.viewModel = passedViewModel;
 
@@ -475,7 +475,7 @@ namespace Melody.UI
         }
 
         // ==================== CLEANUP ====================
-        private void MainWindow_Unloaded(object sender, RoutedEventArgs e)
+        private void PlayerWindow_Unloaded(object sender, RoutedEventArgs e)
         {
             this.StopButton_Click(null, null);
             CompositionTarget.Rendering -= this.UpdateFrame;

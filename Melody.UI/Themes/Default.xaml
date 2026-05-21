@@ -38,7 +38,7 @@
     <SolidColorBrush x:Key="SettingsSaveButtonBackground" Color="#27AE60"/>
     <SolidColorBrush x:Key="SettingsSaveButtonForeground" Color="White"/>
 
-    <!--MainWindow-->
+    <!--PlayerWindow-->
     <SolidColorBrush x:Key="ViewTextForeground" Color="#E2E8F0"/>
     
     <SolidColorBrush x:Key="PianoRollLeftHandNoteBrush" Color="#5C6BC0"/>

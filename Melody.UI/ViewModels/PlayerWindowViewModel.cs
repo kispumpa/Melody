@@ -14,7 +14,7 @@ namespace Melody.UI.ViewModels
     using NAudio.Midi;
 
     /// <summary>Main window view model.</summary>
-    public class MainWindowViewModel : ObservableRecipient
+    public class PlayerWindowViewModel : ObservableRecipient
     {
         private readonly Microsoft.Win32.OpenFileDialog openFileDialog = new Microsoft.Win32.OpenFileDialog
         {
@@ -35,18 +35,18 @@ namespace Melody.UI.ViewModels
         private bool isLoading = false;
         private ObservableCollection<string> loadingMessages;
 
-        /// <summary>Initializes a new instance of the <see cref="MainWindowViewModel"/> class.</summary>
-        public MainWindowViewModel()
+        /// <summary>Initializes a new instance of the <see cref="PlayerWindowViewModel"/> class.</summary>
+        public PlayerWindowViewModel()
             : this(IsInDesignMode ? null : Ioc.Default.GetService<IToggleViewLogic>(), Ioc.Default.GetService<ILilypondLogic>(), Ioc.Default.GetService<IPianorollLogic>(), Ioc.Default.GetService<IMxlUnpacker>())
         {
         }
 
-        /// <summary>Initializes a new instance of the <see cref="MainWindowViewModel"/> class with the specified logic components.</summary>
+        /// <summary>Initializes a new instance of the <see cref="PlayerWindowViewModel"/> class with the specified logic components.</summary>
         /// <param name="toggleLogic">The toggle view logic.</param>
         /// <param name="lilypondLogic">The Lilypond logic.</param>
         /// <param name="pianorollLogic">The pianoroll logic.</param>
         /// <param name="mxlUnpacker">The MXL unpacker.</param>
-        public MainWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic, IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker)
+        public PlayerWindowViewModel(IToggleViewLogic toggleLogic, ILilypondLogic lilypondLogic, IPianorollLogic pianorollLogic, IMxlUnpacker mxlUnpacker)
         {
             this.IsActive = true;
 
@@ -61,7 +61,7 @@ namespace Melody.UI.ViewModels
             this.imagePaths = new ObservableCollection<string>();
             this.InitializeMidiDevices();
 
-            this.Messenger.Register<MainWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
+            this.Messenger.Register<PlayerWindowViewModel, string, string>(this, "ViewResult", (recipient, msg) =>
             {
                 this.OnPropertyChanged(nameof(this.IsPianoRollView));
                 this.OnPropertyChanged(nameof(this.IsSheetMusicView));
@@ -69,7 +69,7 @@ namespace Melody.UI.ViewModels
                 Debug.WriteLine(msg);
             });
 
-            this.Messenger.Register<MainWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
+            this.Messenger.Register<PlayerWindowViewModel, string, string>(this, "MusicXmlLoadResult", (recipient, msg) =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
@@ -86,7 +86,7 @@ namespace Melody.UI.ViewModels
                 Debug.WriteLine(msg);
             });
 
-            this.Messenger.Register<MainWindowViewModel, string, string>(this, "PianorollLoadResult", (recipient, msg) =>
+            this.Messenger.Register<PlayerWindowViewModel, string, string>(this, "PianorollLoadResult", (recipient, msg) =>
             {
                 Application.Current.Dispatcher.Invoke(() =>
                 {
