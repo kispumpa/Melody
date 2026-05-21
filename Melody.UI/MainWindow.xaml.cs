@@ -310,6 +310,7 @@ namespace Melody.UI
             this.playButton.IsEnabled = false;
             this.pauseButton.IsEnabled = true;
             this.stopButton.IsEnabled = true;
+            this.midiDevicesComboBox.IsEnabled = false;
 
             if (this.isPaused)
             {
@@ -338,6 +339,7 @@ namespace Melody.UI
             this.playButton.IsEnabled = true;
             this.pauseButton.IsEnabled = false;
             this.stopButton.IsEnabled = true;
+            this.midiDevicesComboBox.IsEnabled = true;
 
             this.isPaused = true;
             this.pauseTiem = DateTime.Now;
@@ -353,6 +355,7 @@ namespace Melody.UI
             this.playButton.IsEnabled = true;
             this.pauseButton.IsEnabled = false;
             this.stopButton.IsEnabled = false;
+            this.midiDevicesComboBox.IsEnabled = true;
 
             this.UpdateTimeDisplay(0);
 
