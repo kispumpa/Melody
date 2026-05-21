@@ -13,6 +13,7 @@ namespace Melody.UI.ViewModels
         private bool isFullPianoWidth = false;
         private bool isDynamicPianoWidth = true;
         private string selectedTheme = "Default";
+        private string selectedLanguage = "English";
 
         /// <summary>Initializes a new instance of the <see cref="SettingsWindowViewModel"/> class.</summary>
         public SettingsWindowViewModel()
@@ -32,6 +33,12 @@ namespace Melody.UI.ViewModels
         {
             get => this.selectedTheme;
             set => this.SetProperty(ref this.selectedTheme, value);
+        }
+
+        public string SelectedLanguage
+        {
+            get => this.selectedLanguage;
+            set => this.SetProperty(ref this.selectedLanguage, value);
         }
 
         /// <summary>Gets or sets a value indicating whether the piano is displayed at full width.</summary>
@@ -59,6 +66,8 @@ namespace Melody.UI.ViewModels
                 }
             }
         }
+
+        public ObservableCollection<string> AvailableLanguages { get; } = new ObservableCollection<string> { "English", "Hungarian" };
 
         /// <summary>Gets the command to save the settings.</summary>
         public ICommand SaveSettingsCommand { get; }
