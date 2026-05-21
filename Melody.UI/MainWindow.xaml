@@ -23,7 +23,7 @@
             <ComboBox ItemsSource="{Binding MidiDevices}" SelectedIndex="{Binding SelectedMidiDeviceIndex}" 
                       Width="200" Margin="5" VerticalContentAlignment="Center"/>
             <ToggleButton Content="Toggle View" Command="{Binding ToggleViewCommand}" Padding="10,5" Margin="5"/>
-            <TextBlock Text="{Binding ViewText}" FontSize="18" FontWeight="Bold" Padding="10,5" VerticalAlignment="Center"/>
+            <TextBlock Text="{Binding ViewText}" FontSize="18" FontWeight="Bold" Padding="10,5" VerticalAlignment="Center" Foreground="{DynamicResource ViewTextForeground}"/>
         </StackPanel>
 
         <!-- Piano Roll View -->
@@ -53,19 +53,22 @@
         </Grid>
 
         <!-- Playing Controls -->
-        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="10" HorizontalAlignment="Center" Background="{DynamicResource FooterBackground}">
-            <Button x:Name="playButton" Content="▶ Play" Padding="15,5" Margin="5" Click="PlayButton_Click"/>
-            <Button x:Name="pauseButton" Content="⏸ Pause" Padding="15,5" Margin="5" Click="PauseButton_Click" IsEnabled="False"/>
-            <Button x:Name="stopButton" Content="⏹ Stop" Padding="15,5" Margin="5" Click="StopButton_Click" IsEnabled="False"/>
-            <TextBlock x:Name="timeDisplay" Text="00:00 / 00:00" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14"/>
-        </StackPanel>
+        <Border Grid.Row="2" Background="{DynamicResource FooterBackground}">
+            <StackPanel Orientation="Horizontal" Margin="10" HorizontalAlignment="Center">
+                <Button x:Name="playButton" Content="▶ Play" Padding="15,5" Margin="5" Click="PlayButton_Click" Background="{DynamicResource PlayButtonBackground}" Foreground="{DynamicResource PlayButtonForeground}"/>
+                <Button x:Name="pauseButton" Content="⏸ Pause" Padding="15,5" Margin="5" Click="PauseButton_Click" IsEnabled="False" Background="{DynamicResource PauseButtonBackground}" Foreground="{DynamicResource PauseButtonForeground}"/>
+                <Button x:Name="stopButton" Content="⏹ Stop" Padding="15,5" Margin="5" Click="StopButton_Click" IsEnabled="False" Background="{DynamicResource StopButtonBackground}" Foreground="{DynamicResource StopButtonForeground}"/>
+                <TextBlock x:Name="timeDisplay" Text="00:00 / 00:00" VerticalAlignment="Center" Margin="20,0,0,0" FontSize="14" Foreground="{DynamicResource TimerForeground}"/>
+            </StackPanel>
+        </Border>
+
 
         <!--Loading Overlay-->
-        <Grid Grid.RowSpan="3" Background="#E62C3E50" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" Panel.ZIndex="100">
+        <Grid Grid.RowSpan="3" Background="{DynamicResource LoadingBackground}" Visibility="{Binding IsLoading, Converter={StaticResource BoolToVisibilityConverter}}" Panel.ZIndex="100">
             <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Width="500">
 
                 <TextBlock Text="Fájl feldolgozása folyamatban..." 
-                   Foreground="White" 
+                   Foreground="{DynamicResource LoadingForeground}" 
                    FontSize="22" 
                    FontWeight="SemiBold"
                    HorizontalAlignment="Center" 
@@ -73,22 +76,22 @@
 
                 <ProgressBar IsIndeterminate="True" 
                      Height="8" 
-                     Foreground="#3498DB" 
-                     Background="#1A252F" 
+                     Foreground="{DynamicResource ProgressBarForeground}" 
+                     Background="{DynamicResource ProgressBarBackground}" 
                      BorderThickness="0"
                      Margin="0,0,0,25"/>
 
                 <Expander Header="Részletek megjelenítése" 
-                  Foreground="White" 
-                  Background="#34495E" 
-                  BorderBrush="#1A252F" 
+                  Foreground="{DynamicResource LoadingForeground}" 
+                  Background="{DynamicResource ExpanderBackground}" 
+                  BorderBrush="{DynamicResource ExpanderBorderBrush}" 
                   BorderThickness="1">
-                    <Border Background="#1A252F" Height="150" Padding="10">
+                    <Border Background="{DynamicResource ExpanderScrollViewerBackground}" Height="150" Padding="10">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <ListBox ItemsSource="{Binding LoadingMessages}" 
                              Background="Transparent" 
                              BorderThickness="0" 
-                             Foreground="#BDC3C7">
+                             Foreground="{DynamicResource ExpanderScrollViewerForeground}">
                                 <ListBox.ItemTemplate>
                                     <DataTemplate>
                                         <TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="2,4"/>
