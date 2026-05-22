@@ -40,7 +40,6 @@ namespace Melody.Logic
                     outputDirectory = Path.GetDirectoryName(mxlFilePath);
                 }
 
-                // Létrehozunk egy almappát a PNG-knek
                 string fileName = Path.GetFileNameWithoutExtension(mxlFilePath);
                 string pngOutputDir = Path.Combine(outputDirectory, $"{fileName}_pngs");
                 Directory.CreateDirectory(pngOutputDir);

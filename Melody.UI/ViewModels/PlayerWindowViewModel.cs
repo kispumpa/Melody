@@ -187,32 +187,26 @@ namespace Melody.UI.ViewModels
                 this.IsLoading = true;
                 this.LoadingMessages.Clear();
 
-                // Messenger.Send("Fájl betöltése megkezdődött...", "LogMessage");
                 this.IsPianorollLoaded = false;
                 this.IsImageLoaded = false;
                 try
                 {
                     await Task.Run(() =>
                     {
-                        // Messenger.Send("MusicXML kicsomagolása...", "LogMessage");
                         this.mxlUnpacker.ExtractAndSave(filePath, "extracted_musicxml.xml");
 
-                        // Messenger.Send("Kották generálása Lilypond segítségével...", "LogMessage");
                         this.lilypondLogic.LoadLilypond(this.mxlUnpacker.MxlPath);
 
-                        // Messenger.Send("Zongoratekercs inicializálása...", "LogMessage");
                         this.pianorollLogic.InitializePianoRoll(this.mxlUnpacker.MusicXmlPath, Properties.Settings.Default.IsFullPianoWidth);
                     });
 
                     this.IsPianorollLoaded = true;
                     this.IsImageLoaded = true;
 
-                    // Messenger.Send("Sikeresen befejeződött!", "LogMessage");
                     await Task.Delay(1000);
                 }
                 catch (Exception)
                 {
-                    // Messenger.Send($"Hiba történt: {ex.Message}", "LogMessage");
                     await Task.Delay(3000);
                 }
                 finally

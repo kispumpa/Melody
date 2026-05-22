@@ -43,7 +43,7 @@ namespace Melody.Logic
                         XDocument doc = XDocument.Parse(containerXml);
 
                         XNamespace ns = "urn:oasis:names:tc:opendocument:xmlns:container";
-                        var rootfile = doc.Descendants("rootfile").FirstOrDefault();
+                        XElement? rootfile = doc.Descendants("rootfile").FirstOrDefault();
 
                         if (rootfile != null)
                         {

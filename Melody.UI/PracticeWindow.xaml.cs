@@ -4,7 +4,6 @@ namespace Melody.UI
 {
     using System.Diagnostics;
     using System.Text.Json;
-    using System.Text.RegularExpressions;
     using System.Windows;
     using System.Windows.Controls;
     using System.Windows.Media;
@@ -326,7 +325,6 @@ namespace Melody.UI
 
                 if (!note.Played && y <= 0 && y > -note.Y.Length)
                 {
-                    this.PlayNote(note.Pitch, (int)note.Y.Length);
                     int midiNote = this.PitchToMidi(note.Pitch);
                     this.waitingPitches.Add(midiNote);
                     this.isWaiting = true;
@@ -341,18 +339,6 @@ namespace Melody.UI
                 this.btn_retry.IsEnabled = true;
                 this.btn_continue.IsEnabled = true;
             }
-        }
-
-        private void PlayNote(string pitch, int length)
-        {
-            //int midiNote = PitchToMidi(pitch);
-
-            //int durationMs = (int)((length / PixelsPerSecond) * 1000);
-
-            //Task.Delay(durationMs).ContinueWith(_ =>
-            //{
-            //    waitingPitches.Remove(midiNote);
-            //});
         }
 
         private int PitchToMidi(string pitch)
@@ -518,28 +504,6 @@ namespace Melody.UI
                     }
                 }
             }
-        }
-
-        private string ExtractValue(string text)
-        {
-            string pattern = @"Ch:\s+\d+\s+(?<ertek>.*?)\s+Vel";
-
-            Match match = Regex.Match(text, pattern);
-
-            if (match.Success)
-            {
-                return match.Groups["ertek"].Value.Trim();
-            }
-
-            return string.Empty;
-        }
-
-        private int NAudioPitchToMidi(string pitch)
-        {
-            string step = pitch.Remove(pitch.Length - 1, 1);
-            int octave = int.Parse(pitch.Substring(pitch.Length - 1, 1));
-            int midiNote = this.nAudioNote[step] + (12 * octave);
-            return midiNote;
         }
 
         private void StartPracticeButton_Click(object sender, RoutedEventArgs e)

@@ -35,6 +35,7 @@ namespace Melody.UI.ViewModels
             set => this.SetProperty(ref this.selectedTheme, value);
         }
 
+        /// <summary>Gets or sets the selected language.</summary>
         public string SelectedLanguage
         {
             get => this.selectedLanguage;
@@ -67,6 +68,7 @@ namespace Melody.UI.ViewModels
             }
         }
 
+        /// <summary>Gets the available languages.</summary>
         public ObservableCollection<string> AvailableLanguages { get; } = new ObservableCollection<string> { "English", "Hungarian" };
 
         /// <summary>Gets the command to save the settings.</summary>
@@ -77,31 +79,26 @@ namespace Melody.UI.ViewModels
 
         private void SaveSettings()
         {
-            // 1. Téma azonnali alkalmazása a felületen
             this.ApplyTheme(this.SelectedTheme);
 
-            // 2. Beállítások mentése a háttértárra (hogy újraindítás után is megmaradjon)
             Melody.UI.Properties.Settings.Default.Theme = this.SelectedTheme;
             Melody.UI.Properties.Settings.Default.IsFullPianoWidth = this.IsFullPianoWidth;
             Melody.UI.Properties.Settings.Default.Save();
 
-            // 3. Visszatérés a Főmenübe
             this.NavigationRequested?.Invoke(this, "Menu");
         }
 
         private void ApplyTheme(string themeName)
         {
-            // A fájl útvonala (pl. "Themes/Dark.xaml" vagy "Themes/Default.xaml")
             string themePath = $"Themes/{themeName}.xaml";
 
             try
             {
                 System.Windows.ResourceDictionary newTheme = new System.Windows.ResourceDictionary
                 {
-                    Source = new Uri(themePath, UriKind.Relative)
+                    Source = new Uri(themePath, UriKind.Relative),
                 };
 
-                // Kicseréljük az App.xaml-ben lévő aktuális témát az újra
                 System.Windows.Application.Current.Resources.MergedDictionaries.Clear();
                 System.Windows.Application.Current.Resources.MergedDictionaries.Add(newTheme);
             }

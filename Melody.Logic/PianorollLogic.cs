@@ -91,7 +91,7 @@ namespace Melody.Logic
             double counter = 0;
             double durationSum = 300;
             double divisions = 0;
-            double lastDuration = 0; // for chords
+            double lastDuration = 0;
             int measureCount = -1;
             bool isRightHand = true;
 
@@ -217,7 +217,6 @@ namespace Melody.Logic
         /// <inheritdoc/>
         public void CreatePractice()
         {
-            // PracticeNotes -> PracticeStucture.json
         }
 
         private double CheckAlter(string temPitch, double good, double bad, bool index = false, int alter = 0)

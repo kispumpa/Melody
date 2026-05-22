@@ -45,7 +45,6 @@ namespace Melody.UI
         /// <summary>Initializes a new instance of the <see cref="PlayerWindow"/> class.</summary>
         public PlayerWindow()
         {
-            //RenderOptions.ProcessRenderMode = RenderMode.SoftwareOnly;
             this.InitializeComponent();
 
             this.noteRectangles = new Dictionary<Note, Rectangle>();
@@ -244,19 +243,8 @@ namespace Melody.UI
                 this.myPlaybackCursor.Y2 = this.sheetMusicGrid.ActualHeight;
                 this.myPlaybackCursor.Visibility = Visibility.Visible;
 
-                //ImageControl.Source = new BitmapImage(new Uri(viewModel.ImagePaths[0]));
-
-                //BitmapImage bitmap = new BitmapImage();
-                //bitmap.BeginInit();
-                //bitmap.UriSource = new Uri(viewModel.ImagePaths[0], UriKind.Absolute);
-                //bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                //bitmap.CreateOptions = BitmapCreateOptions.IgnoreImageCache; // <-- EZ A KULCS!
-                //bitmap.EndInit();
-
-                //ImageControl.Source = bitmap;
                 BitmapImage bitmap = new BitmapImage();
 
-                // A FileShare.ReadWrite biztosítja, hogy ne fagyjon ki, ha valami még fogná a fájlt
                 using (System.IO.FileStream stream = new System.IO.FileStream(this.viewModel.ImagePaths[0], System.IO.FileMode.Open, System.IO.FileAccess.Read, System.IO.FileShare.ReadWrite))
                 {
                     bitmap.BeginInit();
@@ -265,10 +253,10 @@ namespace Melody.UI
                     bitmap.EndInit();
                 }
 
-                bitmap.Freeze(); // Ez nagyon fontos a WPF-ben! Gyorsítja a renderelést és leválasztja a szálról.
+                bitmap.Freeze();
 
-                this.ImageControl.Source = null;   // Biztos, ami biztos: töröljük a régi képet a felületről
-                this.ImageControl.Source = bitmap; // Rárakjuk a vadonatújat
+                this.ImageControl.Source = null;
+                this.ImageControl.Source = bitmap;
 
                 this.CalculateTotalDuration();
                 this.ImageTransform.X = 300;
